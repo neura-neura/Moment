@@ -8,8 +8,9 @@ Automated checks cover Daily Note transforms, provider settings, templates, inse
 2. Enable Daily Notes or the Periodic Notes daily provider and configure a folder, filename format, and template.
 3. If the vault previously used the two capture plugins, their folders may remain for comparison. Do not depend on them for the native test.
 4. Build Moment with `npm run package:bridge`, or run the published installer. The local installer is `quick-capture-bridge-winui/dist/MomentSetup-x64.exe`.
-5. Verify that the installer opens a real setup wizard (not a 7-Zip extraction dialog), does not request an MSIX certificate, creates a Start menu shortcut, appears in Apps & features, and offers an uninstaller.
-6. Launch Moment, choose this disposable vault, configure the Text Note and Voice pages, and save. Leave Moment running. Do not run this manual plan during automated verification.
+5. Verify that the installer opens a real setup wizard (not a 7-Zip extraction dialog), does not request an MSIX certificate, offers selectable Start menu and Desktop shortcut components, appears in Apps & features, and offers an uninstaller.
+6. Select both shortcut components, finish with **Launch Moment** enabled, and verify the app opens visibly in the foreground from the Finish page. Verify both shortcuts launch the same `Moment.exe`.
+7. Launch Moment, choose this disposable vault, configure the Text Note and Voice pages, and save. Leave Moment running. Do not run this manual plan during automated verification.
 
 ## WinUI bridge setup and registration
 
@@ -39,7 +40,7 @@ Automated checks cover Daily Note transforms, provider settings, templates, inse
 
 ## Native voice capture and routing
 
-1. On the Voice page, choose an audio folder, bitrate, destination, audio-embed option, and voice prefix. Verify the controls persist after saving.
+1. On the Voice page, choose an input device, audio folder, bitrate, destination, audio-embed option, and voice prefix. Verify the controls persist after saving. If Windows default is a virtual cable, choose the physical microphone explicitly.
 2. Press the voice shortcut. Verify only the compact native top-center island appears, recording starts automatically, and it shows the red recording ring, moving level bars, and native Stop/Cancel controls without status text.
 3. Speak for several seconds, then press the same shortcut again. Verify the island disappears immediately without a disabled-button flash and a WebM/Opus file exists under the selected audio folder.
 4. Verify a durable JSON job appears under `.quick-capture\bridge-inbox` and points to the WebM file with the correct relative path and MIME type.
@@ -48,7 +49,7 @@ Automated checks cover Daily Note transforms, provider settings, templates, inse
 7. Deny microphone permission and verify a human-readable Windows microphone error is shown without leaving a partial job.
 8. Start another recording, press Escape or Cancel, and verify no new Markdown/job output is created.
 9. Close Obsidian completely, capture text and voice, then open Obsidian. Verify all output is already present without requiring either capture plugin.
-10. Inspect `.quick-capture\bridge-processed` and `.quick-capture\bridge-failed`. Force a missing audio path and verify the failure sidecar is retained for diagnosis.
+10. Inspect `.quick-capture\bridge-processed` and `.quick-capture\bridge-failed`. Force a missing audio path and verify the failure sidecar is retained for diagnosis. Record once from a muted/silent device and verify the notification says Whisper is installed but no speech was detected, without telling the user to reinstall it.
 11. Change the bridge to a second vault, repeat one text and one voice capture, and verify output routes only to the second vault.
 
 ## Text Note and Voice settings

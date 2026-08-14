@@ -20,6 +20,7 @@ public sealed class BridgeSettings
     public bool DailyEnterToSave { get; set; } = true;
 
     // Migrated Quick Voice Notes settings.
+    public string AudioInputDevice { get; set; } = "default";
     public string AudioFolder { get; set; } = "Voice Notes";
     public int AudioBitsPerSecond { get; set; } = 64_000;
     public bool EnableTranscription { get; set; }

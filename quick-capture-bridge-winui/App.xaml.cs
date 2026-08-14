@@ -45,9 +45,12 @@ public partial class App : Application
         mainWindow.Activate();
 
         var startedInBackground = args.Arguments.Contains("--background", StringComparison.OrdinalIgnoreCase);
+        var startedInForeground = args.Arguments.Contains("--foreground", StringComparison.OrdinalIgnoreCase);
         var launchSettings = new SettingsStore().Load();
         if (startedInBackground || (launchSettings.StartWithWindows && launchSettings.StartMinimized))
             NativeWindowUtilities.Hide(mainWindow.NativeHandle);
+        else if (startedInForeground)
+            NativeWindowUtilities.RestoreAndActivate(mainWindow.NativeHandle);
     }
 
     private void MainWindowClosed(object sender, WindowEventArgs args)

@@ -634,7 +634,9 @@ public sealed class VoicePiP : Window
             encoderError = null;
             encoder = StartWebmEncoder(audioPath, recordingFormat, settings.AudioBitsPerSecond);
             encoderInput = encoder.StandardInput.BaseStream;
-            input = new WaveInEvent { WaveFormat = recordingFormat };
+            var inputDeviceIndex = AudioInputDevices.ResolveIndex(settings.AudioInputDevice);
+            if (inputDeviceIndex < 0) throw new InvalidOperationException("No microphone input device is available. Connect a microphone and try again.");
+            input = new WaveInEvent { DeviceNumber = inputDeviceIndex, WaveFormat = recordingFormat };
             input.DataAvailable += OnDataAvailable;
             input.StartRecording();
             waveTimer = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread().CreateTimer();

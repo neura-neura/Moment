@@ -32,6 +32,7 @@ public sealed partial class MainPage : Page
     private readonly CheckBox dailyCloseAfterSaveCheck = new() { Content = "Close the quick note after saving" };
     private readonly CheckBox dailyEnterToSaveCheck = new() { Content = "Enter saves (Shift+Enter inserts a new line)" };
     private readonly TextBox audioFolderText = new();
+    private readonly ComboBox audioInputDeviceCombo = new();
     private readonly ComboBox audioBitrateCombo = new();
     private readonly CheckBox transcriptionCheck = new() { Content = "Transcribe recordings locally with Whisper" };
     private readonly ComboBox whisperLanguageCombo = new();
@@ -252,6 +253,9 @@ public sealed partial class MainPage : Page
         audioBitrateCombo.Items.Add("32 kbps");
         audioBitrateCombo.Items.Add("64 kbps");
         audioBitrateCombo.Items.Add("96 kbps");
+        audioInputDeviceCombo.DisplayMemberPath = "Label";
+        audioInputDeviceCombo.SelectedValuePath = "Key";
+        RefreshAudioInputDevices();
         foreach (var language in new[] { "auto", "English (en)", "Spanish (es)", "French (fr)", "German (de)", "Italian (it)", "Portuguese (pt)", "Chinese (zh)", "Japanese (ja)", "Korean (ko)", "Russian (ru)" })
             whisperLanguageCombo.Items.Add(language);
         whisperModelCombo.DisplayMemberPath = "Label";
@@ -269,6 +273,7 @@ public sealed partial class MainPage : Page
             {
                 Heading("Recording", 18),
                 Body("Recordings are stored as compact WebM/Opus files inside the selected vault."),
+                Labeled("Input device", audioInputDeviceCombo, "Microphone used for voice recordings. Windows default is selected initially; choose a physical microphone if the default is a virtual cable."),
                 Labeled("Audio folder", FolderEditor(audioFolderText, ChooseAudioFolderClick), "WebM recordings are saved here. Default: Voice Notes in the selected vault."),
                 Labeled("Quality", audioBitrateCombo, "WebM/Opus bitrate. 64 kbps is recommended for speech."),
                 includeAudioEmbedCheck
@@ -436,6 +441,9 @@ public sealed partial class MainPage : Page
         dailyEnterToSaveCheck.IsChecked = settings.DailyEnterToSave;
         dailyCloseAfterSaveCheck.IsChecked = settings.DailyCloseAfterSave;
         audioFolderText.Text = settings.AudioFolder;
+        audioInputDeviceCombo.SelectedValue = settings.AudioInputDevice;
+        if (audioInputDeviceCombo.SelectedIndex < 0 && audioInputDeviceCombo.Items.Count > 0)
+            audioInputDeviceCombo.SelectedIndex = 0;
         audioBitrateCombo.SelectedItem = $"{Math.Clamp(settings.AudioBitsPerSecond, 32_000, 96_000) / 1_000} kbps";
         transcriptionCheck.IsChecked = settings.EnableTranscription;
         whisperLanguageCombo.SelectedItem = LanguageLabel(settings.WhisperLanguage);
@@ -496,6 +504,13 @@ public sealed partial class MainPage : Page
     private async void ChooseAudioFolderClick(object sender, RoutedEventArgs args) => await ChooseVaultRelativeFolderAsync(audioFolderText, "Voice Notes");
 
     private async void ChooseTranscriptionFolderClick(object sender, RoutedEventArgs args) => await ChooseVaultRelativeFolderAsync(transcriptionFolderText, "Voice Transcriptions");
+
+    private void RefreshAudioInputDevices()
+    {
+        audioInputDeviceCombo.Items.Clear();
+        foreach (var option in AudioInputDevices.GetOptions()) audioInputDeviceCombo.Items.Add(option);
+        if (audioInputDeviceCombo.Items.Count > 0) audioInputDeviceCombo.SelectedIndex = 0;
+    }
 
     private async Task ChooseVaultRelativeFolderAsync(TextBox target, string fallback)
     {
@@ -577,6 +592,7 @@ public sealed partial class MainPage : Page
         settings.DailyEnterToSave = dailyEnterToSaveCheck.IsChecked == true;
         settings.DailyCloseAfterSave = dailyCloseAfterSaveCheck.IsChecked == true;
         settings.AudioFolder = string.IsNullOrWhiteSpace(audioFolderText.Text) ? "Voice Notes" : audioFolderText.Text.Trim();
+        settings.AudioInputDevice = audioInputDeviceCombo.SelectedValue as string ?? AudioInputDevices.DefaultKey;
         settings.AudioBitsPerSecond = audioBitrateCombo.SelectedIndex switch { 0 => 32_000, 2 => 96_000, _ => 64_000 };
         settings.EnableTranscription = transcriptionCheck.IsChecked == true;
         settings.WhisperLanguage = LanguageCode(whisperLanguageCombo.SelectedItem as string);

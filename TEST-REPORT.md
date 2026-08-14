@@ -31,18 +31,18 @@ The local x64 installer was regenerated at:
 
 `quick-capture-bridge-winui/dist/MomentSetup-x64.exe`
 
-SHA-256: `486DBE628B86EC7A6A07509BCBAF380338832AB75F58B82AC6C2C4621A084F4E`
-Size: 144,347,045 bytes
+SHA-256: `1673BF8C55948C798B9D08CA71434750F5002A86CFDF9CDF1BBE0F57F31E4E70`
+Size: 144,315,773 bytes
 
-It is a real NSIS setup executable with a per-user install directory, Start menu shortcut, Add/Remove Programs registration, and uninstaller. It is not an MSIX package and does not require a development certificate. A silent disposable install created the app executable and uninstaller; the uninstaller then removed the target successfully. `dist` contains only the installer.
+It is a real NSIS setup executable with selectable Start menu/Desktop shortcuts, a per-user install directory, Add/Remove Programs registration, and uninstaller. Its Finish-page launch passes `--foreground` so Moment opens visibly instead of staying in the tray. It is not an MSIX package and does not require a development certificate. A silent disposable install created the app executable and uninstaller; the uninstaller then removed the target successfully. `dist` contains only the installer.
 
-The Settings UI now exposes Moment branding, conditional Target heading and Missing heading fields, a shared timestamp toggle, vault-relative folder pickers, a native Fluent `Info` tooltip icon, a GitHub update button, and the `Made by neura-neura` repository link.
+The Settings UI now exposes Moment branding, an input-device selector, conditional Target heading and Missing heading fields, a shared timestamp toggle, vault-relative folder pickers, a native Fluent `Info` tooltip icon, a GitHub update button, and the `Made by neura-neura` repository link.
 
 ## Whisper validation
 
 The pinned whisper.cpp v1.9.2 Windows x64 CLI and model pipeline were validated in the previous release verification with a real WAV sample and a real transcript. The native bridge now uses the same pinned engine/model checks, converts saved WebM to temporary mono 16 kHz PCM WAV through its bundled FFmpeg, serializes transcription jobs, and retains failed jobs with an error sidecar. The download writer now closes its file stream before promoting the verified archive; a completed `.download` file is also promoted instead of being discarded and downloaded again.
 
-The native keyboard hook now uses a short time-based debounce rather than relying only on a delayed key-up callback. This prevents the first stop press after the bridge launches from being lost while the first voice PiP window is activating.
+The native keyboard hook now uses a short time-based debounce rather than relying only on a delayed key-up callback. This prevents the first stop press after the bridge launches from being lost while the first voice PiP window is activating. Whisper no-speech failures now identify a silent/incorrect input device instead of incorrectly asking the user to reinstall Whisper, and those non-retryable silent jobs are skipped by **Retry failed jobs**.
 
 ## Manual checks still pending
 

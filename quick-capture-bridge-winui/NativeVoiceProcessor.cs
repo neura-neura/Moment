@@ -55,11 +55,19 @@ public sealed class NativeVoiceProcessor : IDisposable
         var count = 0;
         foreach (var job in Directory.EnumerateFiles(failed, "*.json", SearchOption.TopDirectoryOnly))
         {
+            var errorSidecar = $"{job}.error.txt";
+            if (File.Exists(errorSidecar))
+            {
+                try
+                {
+                    if (IsNonRetryableFailure(File.ReadAllText(errorSidecar))) continue;
+                }
+                catch { /* a locked sidecar should not prevent other jobs from retrying */ }
+            }
             var destination = UniqueMovePath(inbox, Path.GetFileName(job));
             try
             {
                 File.Move(job, destination);
-                var errorSidecar = $"{job}.error.txt";
                 if (File.Exists(errorSidecar)) File.Delete(errorSidecar);
                 count++;
             }
@@ -180,10 +188,8 @@ public sealed class NativeVoiceProcessor : IDisposable
         catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
         catch (Exception error)
         {
-            await MoveToFailureAsync(jobPath, current.VaultPath, error.Message, token);
-            var message = error.Message;
-            if (message.Contains("Whisper", StringComparison.OrdinalIgnoreCase))
-                message = $"Voice note saved, but Whisper transcription failed. Audio remains at {job.AudioPath}. Install / repair Whisper, then use Retry failed jobs. Details: {message}";
+            var message = DescribeProcessingFailure(error.Message, job.AudioPath);
+            await MoveToFailureAsync(jobPath, current.VaultPath, message, token);
             Publish(message, false);
         }
     }
@@ -234,6 +240,20 @@ public sealed class NativeVoiceProcessor : IDisposable
         WriteAtomic(path, body.EndsWith('\n') ? body : body + "\n");
         return relative;
     }
+
+    private static string DescribeProcessingFailure(string error, string audioPath)
+    {
+        if (IsNonRetryableFailure(error))
+            return $"Voice note saved, but Whisper detected no speech. Whisper is installed. Check Voice > Input device and record again. Audio remains at {audioPath}.";
+
+        return error.Contains("Whisper", StringComparison.OrdinalIgnoreCase)
+            ? $"Voice note saved, but Whisper transcription failed. Audio remains at {audioPath}. Install / repair Whisper, then use Retry failed jobs. Details: {error}"
+            : error;
+    }
+
+    private static bool IsNonRetryableFailure(string message) =>
+        message.Contains("did not detect any speech", StringComparison.OrdinalIgnoreCase) ||
+        message.Contains("detected no speech", StringComparison.OrdinalIgnoreCase);
 
     private static async Task MoveToProcessedAsync(string jobPath, string vault, CancellationToken token)
     {
