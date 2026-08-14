@@ -24,12 +24,12 @@ SetCompressor /SOLID lzma
 Icon "${PAYLOAD}\Assets\AppIcon.ico"
 UninstallIcon "${PAYLOAD}\Assets\AppIcon.ico"
 
-VIProductVersion "1.1.0.0"
+VIProductVersion "1.1.1.0"
 VIAddVersionKey "ProductName" "Quick Capture Bridge"
 VIAddVersionKey "CompanyName" "Quick Capture Plugins"
 VIAddVersionKey "FileDescription" "Native WinUI 3 global capture bridge for Obsidian"
-VIAddVersionKey "FileVersion" "1.1.0.0"
-VIAddVersionKey "ProductVersion" "1.1.0.0"
+VIAddVersionKey "FileVersion" "1.1.1.0"
+VIAddVersionKey "ProductVersion" "1.1.1.0"
 VIAddVersionKey "LegalCopyright" "Copyright (c) 2026 Quick Capture Plugins"
 
 !define MUI_ABORTWARNING
@@ -61,7 +61,7 @@ Section "Quick Capture Bridge" InstallSection
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   WriteRegStr HKCU "Software\QuickCaptureBridgeWinUI" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\QuickCaptureBridgeWinUI" "DisplayName" "Quick Capture Bridge"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\QuickCaptureBridgeWinUI" "DisplayVersion" "1.1.0"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\QuickCaptureBridgeWinUI" "DisplayVersion" "1.1.1"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\QuickCaptureBridgeWinUI" "Publisher" "Quick Capture Plugins"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\QuickCaptureBridgeWinUI" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\QuickCaptureBridgeWinUI" "DisplayIcon" "$INSTDIR\QuickCaptureBridgeWinUI.exe"

@@ -24,7 +24,7 @@ public sealed class UpdateService
     public const string Repository = "neura-neura/obsidian-plugins";
     public const string RepositoryUrl = "https://github.com/neura-neura/obsidian-plugins";
     public const string InstallerAssetName = "QuickCaptureBridgeSetup-x64.exe";
-    public static Version CurrentVersion { get; } = new(1, 1, 0);
+    public static Version CurrentVersion { get; } = new(1, 1, 1);
 
     private static readonly HttpClient Http = CreateHttpClient();
 
@@ -124,6 +124,6 @@ public sealed class UpdateService
     private static HttpClient CreateHttpClient() => new(new HttpClientHandler { AllowAutoRedirect = true })
     {
         Timeout = TimeSpan.FromSeconds(45),
-        DefaultRequestHeaders = { { "User-Agent", "QuickCaptureBridge/1.1" }, { "Accept", "application/vnd.github+json" } }
+        DefaultRequestHeaders = { { "User-Agent", "QuickCaptureBridge/1.1.1" }, { "Accept", "application/vnd.github+json" } }
     };
 }

@@ -31,8 +31,8 @@ The local x64 installer was regenerated at:
 
 `quick-capture-bridge-winui/dist/QuickCaptureBridgeSetup-x64.exe`
 
-SHA-256: `C57D5D982A536B05D3EF804C87CFB0F5E2CBBD9A66204EC5396ADD7D65D38BF7`  
-Size: 142,773,151 bytes
+SHA-256: `05E422B0A5457363EB40684D7578AEFC50BAF984941753FB845657C211EF1A30`
+Size: 142,765,915 bytes
 
 It is a real NSIS setup executable with a per-user install directory, Start menu shortcut, Add/Remove Programs registration, and uninstaller. It is not an MSIX package and does not require a development certificate. A silent disposable install created the app executable and uninstaller; the uninstaller then removed the target successfully. `dist` contains only the installer.
 

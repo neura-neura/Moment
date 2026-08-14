@@ -76,6 +76,8 @@ public sealed class NativeHotkeyWindow : IDisposable
     public bool Register(int id, HotkeyBinding binding, out string error)
     {
         ClearLowLevelBinding(id);
+        lowLevelKeysDown.Remove(binding.VirtualKey);
+        lowLevelKeyTimes.Remove(binding.VirtualKey);
         if (IsExtendedFunctionKey(binding.VirtualKey) && keyboardHook != nint.Zero)
         {
             if (id == 1) lowLevelVoice = binding.Clone();
