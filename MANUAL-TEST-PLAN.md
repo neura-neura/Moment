@@ -22,6 +22,7 @@ Automated checks cover Daily Note transforms, provider settings, templates, inse
 7. Save settings, close and relaunch the bridge, and verify the vault and bindings persist in `%LOCALAPPDATA%\QuickCaptureBridge\settings.json`.
 8. Enable **Start with Windows**, sign out/in or restart the app, and verify the bridge starts minimized and still registers both shortcuts.
 9. With **Keep running in the tray when the window is closed** enabled, close the settings window. Verify the process remains active, the tray icon is visible, and the tray Exit command stops the process.
+10. On a fresh bridge launch, press the voice shortcut once, speak, and press it once to stop. Verify the first stop press closes the recording; a third press must not be required.
 
 ## Native Text Note capture
 
@@ -50,6 +51,15 @@ Automated checks cover Daily Note transforms, provider settings, templates, inse
 10. Inspect `.quick-capture\bridge-processed` and `.quick-capture\bridge-failed`. Force a missing audio path and verify the failure sidecar is retained for diagnosis.
 11. Change the bridge to a second vault, repeat one text and one voice capture, and verify output routes only to the second vault.
 
+## Text Note and Voice settings
+
+1. Select **End of daily file** and verify Target heading and Missing heading are hidden. Select **Under a heading** and verify both fields appear together.
+2. Use **Create the heading**, **Append at the end**, and **Show an error** with a missing target heading and verify each behavior.
+3. Uncheck **Add capture timestamp** and verify both text and voice entries omit the timestamp heading while still using their normal destinations.
+4. Use the Audio folder and Separate note folder **Browse...** buttons. Verify the selected paths are stored relative to the selected vault and default to `Voice Notes` and `Voice Transcriptions`.
+5. Choose destination **Text Note**, **Separate transcription note**, and **Both**. Verify Separate note folder is hidden only for Text Note.
+6. Hover the `?` help markers and verify each tooltip uses the native system-colored rounded tooltip and explains the associated setting.
+
 ## Local Whisper
 
 1. Enable transcription and select **Base multilingual**.
@@ -66,6 +76,7 @@ Automated checks cover Daily Note transforms, provider settings, templates, inse
 2. If the legacy plugins remain enabled for comparison, verify their in-Obsidian commands still work and the public Daily Capture API remains compatible. This is optional and is not part of native bridge ownership.
 3. Test the settings and both PiP panels in light and dark themes, at 200% UI zoom, with a narrow window, and with reduced motion enabled.
 4. Verify visible keyboard focus on shortcut fields, the text editor, and recorder buttons. With NVDA if available, verify names for the recording indicator and Stop/Cancel controls.
+5. From Settings, click **Check for updates**. Verify the current release reports that it is up to date. For a newer release, verify the installer checksum is validated before the normal NSIS installer starts.
 
 ## Expected result
 
