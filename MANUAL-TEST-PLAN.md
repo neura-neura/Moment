@@ -49,7 +49,7 @@ Automated checks cover Daily Note transforms, provider settings, templates, inse
 7. Deny microphone permission and verify a human-readable Windows microphone error is shown without leaving a partial job.
 8. Start another recording, press Escape or Cancel, and verify no new Markdown/job output is created.
 9. Close Obsidian completely, capture text and voice, then open Obsidian. Verify all output is already present without requiring either capture plugin.
-10. Inspect `.quick-capture\bridge-processed` and `.quick-capture\bridge-failed`. Force a missing audio path and verify the failure sidecar is retained for diagnosis. Record once from a muted/silent device and verify the notification says Whisper is installed but no speech was detected, without telling the user to reinstall it.
+10. Inspect `.quick-capture\bridge-processed` and `.quick-capture\bridge-failed`. Force a missing audio path and verify the failure sidecar is retained for diagnosis. Record once from a muted/silent device and stop: verify the compact popup says **No audio detected**, the WebM is discarded, no job is enqueued, and Whisper is not invoked. Existing legacy silent jobs should explain that Whisper is installed and no speech was detected without telling the user to reinstall it.
 11. Change the bridge to a second vault, repeat one text and one voice capture, and verify output routes only to the second vault.
 
 ## Text Note and Voice settings
@@ -77,7 +77,7 @@ Automated checks cover Daily Note transforms, provider settings, templates, inse
 2. If the legacy plugins remain enabled for comparison, verify their in-Obsidian commands still work and the public Daily Capture API remains compatible. This is optional and is not part of native bridge ownership.
 3. Test the settings and both PiP panels in light and dark themes, at 200% UI zoom, with a narrow window, and with reduced motion enabled.
 4. Verify visible keyboard focus on shortcut fields, the text editor, and recorder buttons. With NVDA if available, verify names for the recording indicator and Stop/Cancel controls.
-5. From Settings, click **Check for updates**. Verify the current release reports that it is up to date. For a newer release, verify the installer checksum is validated before the normal NSIS installer starts.
+5. From Settings, click **Check for updates**. Verify the current release reports that it is up to date and the status wraps inside the card. For a newer release, verify the installer checksum is validated after the download stream closes, Moment exits, and the normal NSIS installer starts without a file-lock error.
 
 ## Expected result
 

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 
 namespace Moment;
@@ -24,7 +25,7 @@ public sealed class UpdateService
     public const string Repository = "neura-neura/Moment";
     public const string RepositoryUrl = "https://github.com/neura-neura/Moment";
     public const string InstallerAssetName = "MomentSetup-x64.exe";
-    public static Version CurrentVersion { get; } = new(1, 2, 2);
+    public static Version CurrentVersion { get; } = new(1, 2, 3);
 
     private static readonly HttpClient Http = CreateHttpClient();
 
@@ -71,34 +72,46 @@ public sealed class UpdateService
         if (!update.IsUpdateAvailable || string.IsNullOrWhiteSpace(update.InstallerUrl))
             throw new InvalidOperationException("There is no newer Moment installer to download.");
         var destination = Path.Combine(Path.GetTempPath(), $"MomentSetup-{update.LatestVersion}-{Guid.NewGuid():N}.exe");
-        using var response = await Http.GetAsync(update.InstallerUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-        response.EnsureSuccessStatusCode();
-        await using var input = await response.Content.ReadAsStreamAsync(cancellationToken);
-        await using var output = new FileStream(destination, FileMode.CreateNew, FileAccess.Write, FileShare.None, 128 * 1024, true);
-        var buffer = new byte[128 * 1024];
-        int read;
-        long received = 0;
-        while ((read = await input.ReadAsync(buffer, cancellationToken)) > 0)
+        try
         {
-            await output.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
-            received += read;
-            progress?.Report(received);
-        }
-        await output.FlushAsync(cancellationToken);
-        if (!string.IsNullOrWhiteSpace(update.ChecksumUrl))
-        {
-            using var checksumResponse = await Http.GetAsync(update.ChecksumUrl, cancellationToken);
-            checksumResponse.EnsureSuccessStatusCode();
-            var expected = (await checksumResponse.Content.ReadAsStringAsync(cancellationToken)).Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-            await using var installerStream = File.OpenRead(destination);
-            var actual = Convert.ToHexString(await SHA256.HashDataAsync(installerStream, cancellationToken));
-            if (string.IsNullOrWhiteSpace(expected) || !actual.Equals(expected, StringComparison.OrdinalIgnoreCase))
+            using var response = await Http.GetAsync(update.InstallerUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            await using var input = await response.Content.ReadAsStreamAsync(cancellationToken);
+            // Keep the output stream in a nested scope. The checksum pass below
+            // must open the completed installer for reading after this handle is
+            // released; leaving FileShare.None open made every update fail with
+            // a misleading "file is being used" error.
+            await using (var output = new FileStream(destination, FileMode.CreateNew, FileAccess.Write, FileShare.None, 128 * 1024, true))
             {
-                try { File.Delete(destination); } catch { }
-                throw new InvalidOperationException("The downloaded installer checksum does not match the GitHub release.");
+                var buffer = new byte[128 * 1024];
+                int read;
+                long received = 0;
+                while ((read = await input.ReadAsync(buffer, cancellationToken)) > 0)
+                {
+                    await output.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
+                    received += read;
+                    progress?.Report(received);
+                }
+                await output.FlushAsync(cancellationToken);
             }
+
+            if (!string.IsNullOrWhiteSpace(update.ChecksumUrl))
+            {
+                using var checksumResponse = await Http.GetAsync(update.ChecksumUrl, cancellationToken);
+                checksumResponse.EnsureSuccessStatusCode();
+                var expected = (await checksumResponse.Content.ReadAsStringAsync(cancellationToken)).Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+                await using var installerStream = File.OpenRead(destination);
+                var actual = Convert.ToHexString(await SHA256.HashDataAsync(installerStream, cancellationToken));
+                if (string.IsNullOrWhiteSpace(expected) || !actual.Equals(expected, StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidOperationException("The downloaded installer checksum does not match the GitHub release.");
+            }
+            return destination;
         }
-        return destination;
+        catch
+        {
+            TryDelete(destination);
+            throw;
+        }
     }
 
     public static void LaunchInstaller(string installerPath)
@@ -110,6 +123,38 @@ public sealed class UpdateService
             UseShellExecute = true,
             WorkingDirectory = Path.GetDirectoryName(installerPath)!
         });
+    }
+
+    /// <summary>
+    /// Starts a detached PowerShell helper which waits for this Moment process
+    /// to exit before launching NSIS. This prevents the installer from racing
+    /// the app while it is still holding WinUI/WebView/native DLL handles.
+    /// </summary>
+    public static void LaunchInstallerAfterExit(string installerPath)
+    {
+        if (!File.Exists(installerPath)) throw new FileNotFoundException("The downloaded installer could not be found.", installerPath);
+        var escapedInstaller = installerPath.Replace("'", "''", StringComparison.Ordinal);
+        var escapedWorkingDirectory = (Path.GetDirectoryName(installerPath) ?? Path.GetTempPath()).Replace("'", "''", StringComparison.Ordinal);
+        var script = $"$p=Get-Process -Id {Environment.ProcessId} -ErrorAction SilentlyContinue; if ($p) {{ $p.WaitForExit() }}; Start-Process -FilePath '{escapedInstaller}' -WorkingDirectory '{escapedWorkingDirectory}'";
+        var encoded = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
+        var powershell = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "WindowsPowerShell", "v1.0", "powershell.exe");
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = powershell,
+                Arguments = $"-NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -EncodedCommand {encoded}",
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden
+            });
+        }
+        catch
+        {
+            // Keep the direct path as a last-resort fallback on hardened
+            // systems where PowerShell has been disabled by policy.
+            LaunchInstaller(installerPath);
+        }
     }
 
     private static Version ParseVersion(string tag)
@@ -124,6 +169,11 @@ public sealed class UpdateService
     private static HttpClient CreateHttpClient() => new(new HttpClientHandler { AllowAutoRedirect = true })
     {
         Timeout = TimeSpan.FromSeconds(45),
-        DefaultRequestHeaders = { { "User-Agent", "Moment/1.2.2" }, { "Accept", "application/vnd.github+json" } }
+        DefaultRequestHeaders = { { "User-Agent", "Moment/1.2.3" }, { "Accept", "application/vnd.github+json" } }
     };
+
+    private static void TryDelete(string path)
+    {
+        try { if (File.Exists(path)) File.Delete(path); } catch { }
+    }
 }

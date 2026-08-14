@@ -416,6 +416,7 @@ public sealed class TextPiP : Window
 
 public sealed class VoicePiP : Window
 {
+    private const double MinimumDetectedAudioLevel = 0.002;
     private static Brush NativeSurfaceBrush()
     {
         var resources = Application.Current.Resources;
@@ -447,6 +448,7 @@ public sealed class VoicePiP : Window
     private bool stopping;
     private bool started;
     private double audioLevel;
+    private bool detectedAudio;
     private Microsoft.UI.Dispatching.DispatcherQueueTimer? waveTimer;
     private Microsoft.UI.Dispatching.DispatcherQueueTimer? closeTimer;
     private int animationTick;
@@ -594,13 +596,19 @@ public sealed class VoicePiP : Window
     {
         if (stopping) return;
         stopping = true;
-        HideForClose();
         try
         {
             input?.StopRecording();
             DisposeRecorder();
             if (audioPath is null) throw new InvalidOperationException("No audio file was created.");
+            if (!Volatile.Read(ref detectedAudio))
+            {
+                DeleteAudioArtifact();
+                ShowNoAudioDetected();
+                return;
+            }
             EnsureEncodedAudio();
+            HideForClose();
             inbox.WriteVoice(audioPath, startedAt);
             Saved?.Invoke(audioPath);
             CloseSoon(0);
@@ -608,6 +616,7 @@ public sealed class VoicePiP : Window
         catch (Exception error)
         {
             DeleteAudioArtifact();
+            HideForClose();
             Failed?.Invoke($"Voice capture could not be saved: {error.Message}");
             CloseSoon(0);
         }
@@ -632,6 +641,8 @@ public sealed class VoicePiP : Window
             audioPath = inbox.EnsureAudioPath(startedAt);
             encoderExitCode = null;
             encoderError = null;
+            detectedAudio = false;
+            audioLevel = 0;
             encoder = StartWebmEncoder(audioPath, recordingFormat, settings.AudioBitsPerSecond);
             encoderInput = encoder.StandardInput.BaseStream;
             var inputDeviceIndex = AudioInputDevices.ResolveIndex(settings.AudioInputDevice);
@@ -665,6 +676,54 @@ public sealed class VoicePiP : Window
             var motion = Math.Abs(phase - 4) / 4d;
             waveBars[i].Height = 7 + level * 22 + motion * 5;
         }
+    }
+
+    private void ShowNoAudioDetected()
+    {
+        const string title = "No audio detected";
+        const string detail = "Check the selected microphone and try again.";
+        Failed?.Invoke($"{title}. {detail}");
+
+        waveTimer?.Stop();
+        surface.Child = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }
+            },
+            Children =
+            {
+                new SymbolIcon
+                {
+                    Symbol = Symbol.Microphone,
+                    Foreground = NativeRecordingBrush(),
+                    Width = 20,
+                    Height = 20,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(2, 0, 10, 0)
+                },
+                new StackPanel
+                {
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Spacing = 1,
+                    Children =
+                    {
+                        new TextBlock { Text = title, FontSize = 14, FontWeight = FontWeights.SemiBold },
+                        new TextBlock { Text = detail, FontSize = 12, Opacity = 0.72, TextWrapping = TextWrapping.WrapWholeWords }
+                    }
+                }
+            }
+        };
+        Grid.SetColumn((surface.Child as Grid)!.Children[1] as FrameworkElement, 1);
+        AutomationProperties.SetName(surface, $"{title}. {detail}");
+        surface.Opacity = 1;
+        scale.ScaleX = 1;
+        scale.ScaleY = 1;
+        var hwnd = WindowNative.GetWindowHandle(this);
+        NativeWindowUtilities.ConfigureOverlay(hwnd, 260, 60, OverlayPlacement.CenterTop, true);
+        NativeWindowUtilities.Activate(hwnd);
+        CloseSoon(1500);
     }
 
     private void AnimateIn()
@@ -726,6 +785,12 @@ public sealed class VoicePiP : Window
             DisposeRecorder();
             if (audioPath is not null)
             {
+                if (!Volatile.Read(ref detectedAudio))
+                {
+                    DeleteAudioArtifact();
+                    Failed?.Invoke("No audio detected. The silent recording was discarded.");
+                    return;
+                }
                 EnsureEncodedAudio();
                 inbox.WriteVoice(audioPath, startedAt);
                 Saved?.Invoke(audioPath);
@@ -759,7 +824,12 @@ public sealed class VoicePiP : Window
             var sample = BitConverter.ToInt16(args.Buffer, offset);
             sum += sample * (double)sample;
         }
-        if (samples > 0) Volatile.Write(ref audioLevel, Math.Sqrt(sum / samples) / 12000d);
+        if (samples > 0)
+        {
+            var level = Math.Sqrt(sum / samples) / 12000d;
+            Volatile.Write(ref audioLevel, level);
+            if (level >= MinimumDetectedAudioLevel) Volatile.Write(ref detectedAudio, true);
+        }
     }
 
     private void DisposeRecorder()

@@ -350,6 +350,9 @@ public sealed partial class MainPage : Page
         updateButton.Click += UpdateClick;
         updateStatusText.Text = $"Current version: {UpdateService.CurrentVersion}";
         updateStatusText.Opacity = 0.72;
+        updateStatusText.TextWrapping = TextWrapping.WrapWholeWords;
+        updateStatusText.MaxWidth = 680;
+        updateStatusText.HorizontalAlignment = HorizontalAlignment.Stretch;
         var authorLink = new HyperlinkButton
         {
             Content = "Made by neura-neura",
@@ -366,8 +369,8 @@ public sealed partial class MainPage : Page
                 Body("Check GitHub for a newer Moment installer. The normal Windows installer will close and update the running app safely."),
                 new StackPanel
                 {
-                    Orientation = Orientation.Horizontal,
-                    Spacing = 10,
+                    Spacing = 8,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
                     Children = { updateButton, updateStatusText }
                 },
                 authorLink
@@ -686,8 +689,8 @@ public sealed partial class MainPage : Page
             updateStatusText.Text = $"Downloading {update.LatestVersion}...";
             var progress = new Progress<long>(bytes => updateStatusText.Text = $"Downloading {update.LatestVersion}: {bytes / 1_048_576d:0.0} MB");
             var installer = await updateService.DownloadInstallerAsync(update, progress);
-            updateStatusText.Text = "Starting the installer...";
-            UpdateService.LaunchInstaller(installer);
+            updateStatusText.Text = "Closing Moment and starting the installer...";
+            UpdateService.LaunchInstallerAfterExit(installer);
             ((App)Application.Current).ExitForUpdate();
         }
         catch (Exception error)
