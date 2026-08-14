@@ -30,6 +30,15 @@ try
     var dailyText = await File.ReadAllTextAsync(Path.Combine(root, dailyPath.Replace('/', Path.DirectorySeparatorChar)));
     Assert(dailyText.Contains("# Inbox", StringComparison.Ordinal) && dailyText.Contains("Smoke text", StringComparison.Ordinal), "Daily Note insertion");
 
+    settings.DailyFilenameFormat = "DD MMMM YYYY";
+    settings.DailyFilenamePrefix = "Journal-";
+    var customDailyTimestamp = new DateTimeOffset(2026, 8, 14, 10, 31, 0, TimeSpan.Zero);
+    var customDailyPath = new NativeDailyNoteService(settings).WriteCapture("Custom filename", customDailyTimestamp);
+    var expectedStem = VaultPath.SanitizeFilename($"Journal-{MomentFormat.Format(customDailyTimestamp.ToLocalTime(), "DD MMMM YYYY")}");
+    Assert(customDailyPath.EndsWith($"{expectedStem}.md", StringComparison.Ordinal), "custom localized filename and prefix");
+    var duplicatePath = new NativeDailyNoteService(settings).WriteCapture("Same filename appends", customDailyTimestamp.AddMinutes(1));
+    Assert(string.Equals(customDailyPath, duplicatePath, StringComparison.Ordinal), "duplicate filename reuses existing note");
+
     var legacyText = new TextJob { Text = "Legacy text", Timestamp = "2026-08-13T10:31:00+00:00" };
     await File.WriteAllTextAsync(Path.Combine(root, ".quick-capture", "inbox", $"text-{legacyText.Id}.json"), JsonSerializer.Serialize(legacyText));
 

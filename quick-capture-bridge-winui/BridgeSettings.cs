@@ -15,6 +15,8 @@ public sealed class BridgeSettings
     public string DailyTargetHeading { get; set; } = "Notes";
     public string DailyMissingHeadingBehavior { get; set; } = "create";
     public string DailyTimestampFormat { get; set; } = "HH:mm";
+    public string DailyFilenameFormat { get; set; } = "YYYY-MM-DD";
+    public string DailyFilenamePrefix { get; set; } = "";
     public bool IncludeTimestamp { get; set; } = true;
     public bool DailyCloseAfterSave { get; set; } = true;
     public bool DailyEnterToSave { get; set; } = true;

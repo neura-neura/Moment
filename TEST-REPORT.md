@@ -13,7 +13,7 @@ npm run verify
 
 The final run passed **41 plugin tests**: 18 for Quick Daily Capture and 23 for Quick Voice Notes/integration. It also passed strict TypeScript checks, ESLint, production plugin builds, and the Release x64 WinUI bridge build with zero warnings or errors.
 
-The native bridge build validates the configurable global registration path, native NavigationView settings surface, compact WinUI overlays, live no-signal feedback integrated into the recording controls, NAudio recorder wiring, silent-capture rejection before vault enqueue, WebM encoder integration, atomic vault writer, native voice processor compilation, field tooltips, tray notifications, the GitHub update checker, and release-version metadata.
+The native bridge build validates the configurable global registration path, native NavigationView settings surface, compact WinUI overlays, live no-signal feedback integrated into the recording controls, configurable localized Text Note filenames and collision reuse, NAudio recorder wiring, silent-capture rejection before vault enqueue, WebM encoder integration, atomic vault writer, native voice processor compilation, field tooltips, tray notifications, the GitHub update checker, and release-version metadata.
 
 ## Native migration smoke test
 
@@ -31,8 +31,8 @@ The local x64 installer was regenerated at:
 
 `quick-capture-bridge-winui/dist/MomentSetup-x64.exe`
 
-SHA-256: `FBC6051215D867C9257CF66D58F655800457C392442E78F6F244466BB38FB14A`
-Size: 144,313,739 bytes
+SHA-256: `EF3672ADCF26727D5E0316C2C4AD9B2BD25455A8AD450DAF50033FF1DE541090`
+Size: 144,325,509 bytes
 
 It is a real NSIS setup executable with selectable Start menu/Desktop shortcuts, a per-user install directory, Add/Remove Programs registration, and uninstaller. Its Finish-page launch passes `--foreground` so Moment opens visibly instead of staying in the tray. It is not an MSIX package and does not require a development certificate. A silent disposable install created the app executable and uninstaller; the uninstaller then removed the target successfully. `dist` contains only the installer.
 

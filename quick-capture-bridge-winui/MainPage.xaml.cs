@@ -24,6 +24,8 @@ public sealed partial class MainPage : Page
     private readonly TextBlock textStatusText = new();
     private readonly TextBox dailyHeadingText = new();
     private readonly TextBox dailyTimestampText = new();
+    private readonly TextBox dailyFilenameFormatText = new() { PlaceholderText = "YYYY-MM-DD" };
+    private readonly TextBox dailyFilenamePrefixText = new() { PlaceholderText = "Optional prefix" };
     private readonly ComboBox dailyInsertionCombo = new();
     private readonly ComboBox dailyMissingHeadingCombo = new();
     private readonly CheckBox timestampEnabledCheck = new() { Content = "Add capture timestamp" };
@@ -317,7 +319,7 @@ public sealed partial class MainPage : Page
 
     private void BuildSettingsSection()
     {
-        var content = CreateSection("settings", "Settings", "Choose how Moment starts and what happens when its window is closed.");
+        var content = CreateSection("settings", "Settings", "Configure startup, tray behavior, Text Note filenames, and updates.");
         var startupCard = Card();
         startupCard.Child = new StackPanel
         {
@@ -331,6 +333,22 @@ public sealed partial class MainPage : Page
             }
         };
         content.Children.Add(startupCard);
+
+        var filenameCard = Card();
+        ToolTipService.SetToolTip(dailyFilenameFormatText, "Tokens: YYYY year, MM month number, DD day, MMM/M MMMM localized month, and ddd/dddd localized weekday. Example: DD MMMM YYYY. MMMM and dddd use your Windows language. Use [text] for literal text.");
+        ToolTipService.SetToolTip(dailyFilenamePrefixText, "Text placed before the generated filename. Example: Journal- creates Journal-2026-08-14.");
+        filenameCard.Child = new StackPanel
+        {
+            Spacing = 10,
+            Children =
+            {
+                Heading("Text Note filename", 18),
+                Body("Customize the daily file name created by the text and voice shortcuts. If the generated name already exists, Moment reuses it and appends the capture instead of overwriting it."),
+                Labeled("Filename format", dailyFilenameFormatText, "Date tokens use the Windows regional language for month and weekday names. Default: YYYY-MM-DD."),
+                Labeled("Filename prefix", dailyFilenamePrefixText, "Optional text placed before the generated date filename.")
+            }
+        };
+        content.Children.Add(filenameCard);
 
         var privacyCard = Card();
         privacyCard.Child = new StackPanel
@@ -439,6 +457,8 @@ public sealed partial class MainPage : Page
         dailyHeadingText.Text = settings.DailyTargetHeading;
         dailyMissingHeadingCombo.SelectedIndex = settings.DailyMissingHeadingBehavior switch { "end" => 1, "error" => 2, _ => 0 };
         dailyTimestampText.Text = settings.DailyTimestampFormat;
+        dailyFilenameFormatText.Text = settings.DailyFilenameFormat;
+        dailyFilenamePrefixText.Text = settings.DailyFilenamePrefix;
         timestampEnabledCheck.IsChecked = settings.IncludeTimestamp;
         dailyTimestampText.IsEnabled = settings.IncludeTimestamp;
         dailyEnterToSaveCheck.IsChecked = settings.DailyEnterToSave;
@@ -591,6 +611,8 @@ public sealed partial class MainPage : Page
         settings.DailyTargetHeading = dailyHeadingText.Text.Trim();
         settings.DailyMissingHeadingBehavior = dailyMissingHeadingCombo.SelectedIndex switch { 1 => "end", 2 => "error", _ => "create" };
         settings.DailyTimestampFormat = string.IsNullOrWhiteSpace(dailyTimestampText.Text) ? "HH:mm" : dailyTimestampText.Text.Trim();
+        settings.DailyFilenameFormat = dailyFilenameFormatText.Text.Trim();
+        settings.DailyFilenamePrefix = dailyFilenamePrefixText.Text.Trim();
         settings.IncludeTimestamp = timestampEnabledCheck.IsChecked == true;
         settings.DailyEnterToSave = dailyEnterToSaveCheck.IsChecked == true;
         settings.DailyCloseAfterSave = dailyCloseAfterSaveCheck.IsChecked == true;

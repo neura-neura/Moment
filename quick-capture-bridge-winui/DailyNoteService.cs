@@ -22,13 +22,21 @@ public sealed class NativeDailyNoteService
 
         var provider = DailyNoteProviderSettings.Load(settings.VaultPath);
         var local = timestamp.ToLocalTime();
-        var filename = MomentFormat.Format(local, string.IsNullOrWhiteSpace(provider.Format) ? "YYYY-MM-DD" : provider.Format);
+        var filenameFormat = string.IsNullOrWhiteSpace(settings.DailyFilenameFormat)
+            ? (string.IsNullOrWhiteSpace(provider.Format) ? "YYYY-MM-DD" : provider.Format)
+            : settings.DailyFilenameFormat.Trim();
+        var filename = MomentFormat.Format(local, filenameFormat);
+        var prefix = settings.DailyFilenamePrefix?.Trim() ?? "";
+        filename = VaultPath.SanitizeFilename(prefix + filename);
         var relative = VaultPath.Combine(provider.Folder, filename.EndsWith(".md", StringComparison.OrdinalIgnoreCase) ? filename : $"{filename}.md");
         var absolute = VaultPath.Resolve(settings.VaultPath, relative);
         Directory.CreateDirectory(Path.GetDirectoryName(absolute)!);
         var gate = FileLocks.GetOrAdd(absolute, _ => new object());
         lock (gate)
         {
+            // A generated name collision is intentional daily-note behavior:
+            // reuse the existing file and append the new capture rather than
+            // overwriting it or silently creating a duplicate.
             if (!File.Exists(absolute))
                 WriteAtomic(absolute, TemplateRenderer.Load(settings.VaultPath, provider.Template, filename, local, provider.Format));
             var current = File.ReadAllText(absolute, Encoding.UTF8);
@@ -138,6 +146,14 @@ internal static class VaultPath
         if (normalized is "" or ".") return "";
         if (Path.IsPathRooted(normalized) || normalized.Split('/').Any(p => p is "" or "..")) throw new InvalidOperationException("Vault folders must remain relative to the selected vault.");
         return normalized;
+    }
+
+    public static string SanitizeFilename(string value)
+    {
+        var invalid = new HashSet<char>(Path.GetInvalidFileNameChars()) { '/', '\\' };
+        var clean = new string((value ?? "").Select(character => invalid.Contains(character) ? '-' : character).ToArray()).Trim().TrimEnd('.', ' ');
+        if (clean.Length == 0 || clean is "." or "..") throw new InvalidOperationException("The Text Note filename is empty or invalid.");
+        return clean;
     }
 }
 
