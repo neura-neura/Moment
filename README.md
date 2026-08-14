@@ -49,4 +49,4 @@ See each plugin README for legacy in-Obsidian commands, [INTEGRATION.md](INTEGRA
 
 See [quick-capture-bridge-winui/README.md](quick-capture-bridge-winui/README.md) for migration, independent processing, and real NSIS EXE installer instructions.
 
-The native bridge is designed to work alongside Obsidian, but its global text capture, WebM recording, Daily-file routing, and local Whisper processing can also run while Obsidian is closed or without the capture plugins. Source and releases are published at [github.com/neura-neura/obsidian-plugins](https://github.com/neura-neura/obsidian-plugins).
+The native bridge is designed to work alongside Obsidian, but its global text capture, WebM recording, Daily-file routing, and local Whisper processing can also run while Obsidian is closed or without the capture plugins. Source and releases are published at [github.com/neura-neura/obsidian-plugins](https://github.com/neura-neura/obsidian-plugins), with the current installer at [release v1.1.1](https://github.com/neura-neura/obsidian-plugins/releases/tag/v1.1.1).

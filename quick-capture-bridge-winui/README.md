@@ -2,7 +2,7 @@
 
 Quick Capture Bridge is the native Windows application for frictionless Obsidian capture. It is built with WinUI 3 and Windows App SDK, so its settings window and both always-on-top picture-in-picture (PiP) capture panels use the same native UI stack. The bridge runs independently; Quick Daily Capture and Quick Voice Notes are optional legacy integrations.
 
-It is made to work alongside Obsidian, while remaining useful with Obsidian closed or without the capture plugins. The public source and releases are published at [github.com/neura-neura/obsidian-plugins](https://github.com/neura-neura/obsidian-plugins).
+It is made to work alongside Obsidian, while remaining useful with Obsidian closed or without the capture plugins. The public source and releases are published at [github.com/neura-neura/obsidian-plugins](https://github.com/neura-neura/obsidian-plugins). The current Windows release is [Quick Capture Bridge 1.1.1](https://github.com/neura-neura/obsidian-plugins/releases/tag/v1.1.1).
 
 The settings window uses a native WinUI NavigationView: Text Note, Voice, and Shortcuts are in the left menu, while startup and tray behavior live under the footer Settings section. The Save settings action remains available in the native footer across sections.
 
