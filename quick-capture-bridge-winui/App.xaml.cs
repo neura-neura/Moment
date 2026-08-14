@@ -44,8 +44,15 @@ public partial class App : Application
         mainWindow.Closed += MainWindowClosed;
         mainWindow.Activate();
 
-        var startedInBackground = args.Arguments.Contains("--background", StringComparison.OrdinalIgnoreCase);
-        var startedInForeground = args.Arguments.Contains("--foreground", StringComparison.OrdinalIgnoreCase);
+        // Unpackaged Windows App SDK launches do not consistently populate
+        // LaunchActivatedEventArgs.Arguments for Shell/NSIS launches. Read the
+        // raw process command line as well so the installer Finish action can
+        // always override a saved tray/minimized preference.
+        var commandLine = Environment.GetCommandLineArgs();
+        var startedInBackground = args.Arguments.Contains("--background", StringComparison.OrdinalIgnoreCase) ||
+            commandLine.Any(argument => string.Equals(argument, "--background", StringComparison.OrdinalIgnoreCase));
+        var startedInForeground = args.Arguments.Contains("--foreground", StringComparison.OrdinalIgnoreCase) ||
+            commandLine.Any(argument => string.Equals(argument, "--foreground", StringComparison.OrdinalIgnoreCase));
         var launchSettings = new SettingsStore().Load();
         // The installer and an explicit user launch must win over the
         // background startup preference. StartMinimized is only for the

@@ -17,19 +17,19 @@ InstallDir "$LOCALAPPDATA\Programs\Moment"
 InstallDirRegKey HKCU "Software\Moment" "InstallLocation"
 RequestExecutionLevel user
 BrandingText "Moment"
-ShowInstDetails show
-ShowUninstDetails show
+ShowInstDetails hide
+ShowUninstDetails hide
 SetCompressor /SOLID lzma
 
 Icon "${PAYLOAD}\Assets\AppIcon.ico"
 UninstallIcon "${PAYLOAD}\Assets\AppIcon.ico"
 
-VIProductVersion "1.2.4.0"
+VIProductVersion "1.2.5.0"
 VIAddVersionKey "ProductName" "Moment"
 VIAddVersionKey "CompanyName" "neura-neura"
 VIAddVersionKey "FileDescription" "Native WinUI 3 global text and voice capture"
-VIAddVersionKey "FileVersion" "1.2.4.0"
-VIAddVersionKey "ProductVersion" "1.2.4.0"
+VIAddVersionKey "FileVersion" "1.2.5.0"
+VIAddVersionKey "ProductVersion" "1.2.5.0"
 VIAddVersionKey "LegalCopyright" "Copyright (c) 2026 neura-neura"
 
 !define MUI_ABORTWARNING
@@ -53,15 +53,15 @@ Section "Moment" InstallSection
   ; Allow an existing bridge installation to be upgraded without leaving a
   ; locked executable behind. User settings live in LocalAppData and remain
   ; untouched by this process stop.
-  nsExec::ExecToLog '"$SYSDIR\taskkill.exe" /F /IM Moment.exe'
-  nsExec::ExecToLog '"$SYSDIR\taskkill.exe" /F /IM QuickCaptureBridgeWinUI.exe'
+  ExecWait '"$SYSDIR\taskkill.exe" /F /IM Moment.exe'
+  ExecWait '"$SYSDIR\taskkill.exe" /F /IM QuickCaptureBridgeWinUI.exe'
   SetOutPath "$INSTDIR"
   File /r "${PAYLOAD}\*"
 
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   WriteRegStr HKCU "Software\Moment" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "DisplayName" "Moment"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "DisplayVersion" "1.2.4"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "DisplayVersion" "1.2.5"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "Publisher" "neura-neura"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "DisplayIcon" "$INSTDIR\Moment.exe"
@@ -82,8 +82,8 @@ Section /o "Desktop shortcut" DesktopSection
 SectionEnd
 
 Section "Uninstall"
-  nsExec::ExecToLog '"$SYSDIR\taskkill.exe" /F /IM Moment.exe'
-  nsExec::ExecToLog '"$SYSDIR\taskkill.exe" /F /IM QuickCaptureBridgeWinUI.exe'
+  ExecWait '"$SYSDIR\taskkill.exe" /F /IM Moment.exe'
+  ExecWait '"$SYSDIR\taskkill.exe" /F /IM QuickCaptureBridgeWinUI.exe'
   Delete "$SMPROGRAMS\Moment\Moment.lnk"
   RMDir "$SMPROGRAMS\Moment"
   Delete "$DESKTOP\Moment.lnk"
