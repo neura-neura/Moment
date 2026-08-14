@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace QuickCaptureBridgeWinUI;
+namespace Moment;
 
 public sealed class VaultInbox
 {
@@ -99,7 +99,7 @@ public sealed class TextJob
     public string CreatedAt { get; set; } = DateTimeOffset.Now.ToString("O");
     public string Timestamp { get; set; } = DateTimeOffset.Now.ToString("O");
     public string Text { get; set; } = "";
-    public string Source { get; set; } = "quick-capture-bridge-winui";
+    public string Source { get; set; } = "moment";
 }
 
 public sealed class VoiceJob

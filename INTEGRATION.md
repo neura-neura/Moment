@@ -1,10 +1,10 @@
 # Capture integration and migration
 
-Quick Capture Bridge is the independent Windows path for capture outside Obsidian. Quick Daily Capture and Quick Voice Notes remain compatible Obsidian plugins for users who want in-app commands, but the bridge no longer depends on either plugin.
+Moment is the independent Windows path for capture outside Obsidian. Quick Daily Capture and Quick Voice Notes remain compatible Obsidian plugins for users who want in-app commands, but Moment no longer depends on either plugin.
 
 ## Native bridge path
 
-1. Choose a vault in Quick Capture Bridge.
+1. Choose a vault in Moment.
 2. Configure the Text Note and Voice pages directly and save.
 3. If transcription is enabled, install the selected Whisper engine/model from the Voice page.
 4. Capture while Obsidian is closed. Text is written to the configured daily file. Voice is saved as WebM and routed to a Text Note, a separate Markdown note, or both.

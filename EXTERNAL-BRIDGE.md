@@ -6,7 +6,7 @@ The repository now includes `quick-capture-bridge-winui`, a native WinUI 3 Windo
 Configured shortcut anywhere in Windows
         |
         v
-Quick Capture Bridge (WinUI 3 settings + compact topmost PiP panels)
+Moment (WinUI 3 settings + compact topmost PiP panels)
         |
         +--> Voice Notes/<timestamp>.webm (Opus)
         +--> Daily/<date>.md (timestamped text or voice entry)
@@ -33,6 +33,6 @@ Both commands also expose safe defaults (`F14` for **Quick Daily Capture: New en
 - If a hotkey is already registered by another application, the bridge reports the conflict and that action is unavailable until a different key is selected.
 - `.quick-capture/bridge-inbox` is the native durable queue. `.quick-capture/bridge-processed` contains completed jobs and `.quick-capture/bridge-failed` contains jobs that need attention. Deleting a queued job discards only that pending capture.
 
-The production download link for the WinUI 3 bridge is pending publication. Local development builds produce a real NSIS Windows installer EXE through `npm run package:bridge`; it has a setup wizard and uninstaller, and no MSIX certificate is required. The bridge can stay hidden in the Windows notification tray when its settings window is closed, and its two capture panels are compact topmost overlays rather than normal application windows.
+The production installer is published in the [Moment v1.2.0 release](https://github.com/neura-neura/Moment/releases/tag/v1.2.0). Local development builds produce a real NSIS Windows installer EXE through `npm run package:bridge`; it has a setup wizard and uninstaller, and no MSIX certificate is required. Moment can stay hidden in the Windows notification tray when its settings window is closed, and its two capture panels are compact topmost overlays rather than normal application windows.
 
 

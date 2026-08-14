@@ -1,6 +1,6 @@
 using Microsoft.UI.Xaml;
 
-namespace QuickCaptureBridgeWinUI;
+namespace Moment;
 
 public partial class App : Application
 {
@@ -16,7 +16,7 @@ public partial class App : Application
         UnhandledException += (_, exception) =>
         {
             var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "QuickCaptureBridge", "startup.log");
+                "Moment", "startup.log");
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             File.AppendAllText(path, $"{DateTimeOffset.Now:O} {exception.Exception}\n");
         };

@@ -9,7 +9,7 @@ using Windows.Storage.Pickers;
 using Windows.UI;
 using WinRT.Interop;
 
-namespace QuickCaptureBridgeWinUI;
+namespace Moment;
 
 public sealed partial class MainPage : Page
 {
@@ -149,7 +149,7 @@ public sealed partial class MainPage : Page
             Children =
             {
                 Heading("Selected vault", 18),
-                Body("The bridge writes directly to this vault, even while Obsidian is closed. Text notes are inserted into the configured daily file, and voice recordings are processed independently."),
+                Body("Moment writes directly to this vault, even while Obsidian is closed. Text notes are inserted into the configured daily file, and voice recordings are processed independently."),
                 vaultPathText,
                 Button("Choose vault...", ChooseVaultClick)
             }
@@ -166,19 +166,19 @@ public sealed partial class MainPage : Page
         dailyInsertionCombo.SelectionChanged += (_, _) => UpdateDailyInsertionVisibility();
         ToolTipService.SetToolTip(dailyEnterToSaveCheck, "When enabled, Enter saves the text note and Shift+Enter inserts a new line.");
         ToolTipService.SetToolTip(dailyCloseAfterSaveCheck, "When enabled, the text-note overlay closes after a successful save.");
-        dailyTargetHeadingField = Labeled("Target heading", dailyHeadingText, "The Markdown heading used by Under a heading insertion. Example: Notes matches ## Notes. It is ignored for End and Beginning.");
-        dailyMissingHeadingField = Labeled("Missing heading", dailyMissingHeadingCombo, "What happens when Target heading is not present: create it, append at the end, or stop with an error.");
+        dailyTargetHeadingField = Labeled("Target heading", dailyHeadingText, "Heading used by Under a heading. Example: Notes.");
+        dailyMissingHeadingField = Labeled("Missing heading", dailyMissingHeadingCombo, "Action when the target heading is missing.");
         dailyCard.Child = new StackPanel
         {
             Spacing = 10,
             Children =
             {
                 Heading("Text note", 18),
-                Body("The bridge follows Obsidian's configured daily-file folder, filename format, and template. If today's file does not exist, it creates it before inserting the text note."),
-                Labeled("Insertion", dailyInsertionCombo, "Where the text note is placed in the daily file. End is the safest default; Beginning keeps it near the top; Under a heading places it inside a named section."),
+                Body("Moment follows Obsidian's configured daily-file folder, filename format, and template. If today's file does not exist, it creates it before inserting the text note."),
+                Labeled("Insertion", dailyInsertionCombo, "Where the text note is placed in the daily file."),
                 dailyTargetHeadingField,
                 dailyMissingHeadingField,
-                Labeled("Timestamp format", dailyTimestampText, "The format used for the small heading added to each text note. HH:mm produces headings such as ## 22:17."),
+                Labeled("Timestamp format", dailyTimestampText, "Format for capture times. HH:mm produces 22:17."),
                 timestampEnabledCheck,
                 dailyEnterToSaveCheck,
                 dailyCloseAfterSaveCheck
@@ -241,7 +241,7 @@ public sealed partial class MainPage : Page
         content.Children.Add(shortcutCard);
 
         var note = Card();
-        note.Child = Body("Register shortcuts after changing them. The bridge keeps listening even when this settings window is closed to the notification tray.");
+        note.Child = Body("Register shortcuts after changing them. Moment keeps listening even when this settings window is closed to the notification tray.");
         content.Children.Add(note);
     }
 
@@ -269,8 +269,8 @@ public sealed partial class MainPage : Page
             {
                 Heading("Recording", 18),
                 Body("Recordings are stored as compact WebM/Opus files inside the selected vault."),
-                Labeled("Audio folder", FolderEditor(audioFolderText, ChooseAudioFolderClick), "A vault-relative folder for WebM recordings. It defaults to Voice Notes inside the selected vault. Use Browse to choose another folder; absolute paths and .. are not allowed."),
-                Labeled("Quality", audioBitrateCombo, "The WebM/Opus bitrate. Higher values use more space; 64 kbps is a good speech default."),
+                Labeled("Audio folder", FolderEditor(audioFolderText, ChooseAudioFolderClick), "WebM recordings are saved here. Default: Voice Notes in the selected vault."),
+                Labeled("Quality", audioBitrateCombo, "WebM/Opus bitrate. 64 kbps is recommended for speech."),
                 includeAudioEmbedCheck
             }
         };
@@ -283,20 +283,21 @@ public sealed partial class MainPage : Page
         whisperInstallButton.Click += WhisperInstallClick;
         whisperStatusText.Opacity = 0.72;
         ToolTipService.SetToolTip(transcriptionCheck, "After recording, run local Whisper and route the recognized text to the selected destination.");
-        transcriptionFolderField = Labeled("Separate note folder", FolderEditor(transcriptionFolderText, ChooseTranscriptionFolderClick), "A vault-relative folder for generated transcript Markdown notes. It defaults to Voice Transcriptions inside the selected vault. Audio files stay in Audio folder.");
+        transcriptionFolderField = Labeled("Separate note folder", FolderEditor(transcriptionFolderText, ChooseTranscriptionFolderClick), "Transcript Markdown files are saved here. Default: Voice Transcriptions in the selected vault.");
+        var transcriptionDestinationField = Labeled("Destination", transcriptionDestinationCombo, "Choose Text Note, a separate note, or both.");
         transcriptionCard.Child = new StackPanel
         {
             Spacing = 10,
             Children =
             {
                 Heading("Local transcription", 18),
-                Body("Whisper runs locally and is downloaded only when you enable it. The selected model is stored in your Windows user profile. If a transcription fails, the audio remains in the Audio folder and the bridge shows a Windows notification; no audio is copied into the transcription folder."),
+                Body("Whisper runs locally and is downloaded only when you enable it. The selected model is stored in your Windows user profile. If a transcription fails, the audio remains in the Audio folder and Moment shows a Windows notification; no audio is copied into the transcription folder."),
                 transcriptionCheck,
-                Labeled("Language", whisperLanguageCombo, "The language passed to Whisper. Auto lets Whisper detect the spoken language."),
-                Labeled("Model", whisperModelCombo, "The local Whisper model. Larger models can be more accurate but need more storage and processing time."),
+                Labeled("Language", whisperLanguageCombo, "Language passed to Whisper. Auto detects the spoken language."),
+                Labeled("Model", whisperModelCombo, "Local Whisper model. Larger models can be more accurate and slower."),
+                transcriptionDestinationField,
                 transcriptionFolderField,
-                Labeled("Destination", transcriptionDestinationCombo, "Choose Text Note, a separate transcript note, or both. Text Note creation also creates the daily file when it does not exist."),
-                Labeled("Voice prefix", voicePrefixText, "Optional text placed before every transcript. Example: Meeting - adds 'Meeting - ' before the recognized speech."),
+                Labeled("Voice prefix", voicePrefixText, "Optional text placed before each transcript. Example: Meeting."),
                 new StackPanel
                 {
                     Orientation = Orientation.Horizontal,
@@ -311,7 +312,7 @@ public sealed partial class MainPage : Page
 
     private void BuildSettingsSection()
     {
-        var content = CreateSection("settings", "Settings", "Choose how the bridge starts and what happens when its window is closed.");
+        var content = CreateSection("settings", "Settings", "Choose how Moment starts and what happens when its window is closed.");
         var startupCard = Card();
         startupCard.Child = new StackPanel
         {
@@ -321,7 +322,7 @@ public sealed partial class MainPage : Page
                 Heading("Startup and tray", 18),
                 startWithWindowsCheck,
                 closeToTrayCheck,
-                Body("Start with Windows keeps global capture available after sign-in. Closing this window can hide the bridge in the notification tray instead of stopping capture.")
+                Body("Start with Windows keeps global capture available after sign-in. Closing this window can hide Moment in the notification tray instead of stopping capture.")
             }
         };
         content.Children.Add(startupCard);
@@ -333,7 +334,7 @@ public sealed partial class MainPage : Page
             Children =
             {
                 Heading("Native companion", 18),
-                Body("Quick Capture Bridge runs locally and owns capture routing, Text Note insertion, WebM storage, and Whisper transcription. Obsidian only needs to be open later to display the files.")
+                Body("Moment runs locally and owns capture routing, Text Note insertion, WebM storage, and Whisper transcription. Obsidian only needs to be open later to display the files.")
             }
         };
         content.Children.Add(privacyCard);
@@ -357,7 +358,7 @@ public sealed partial class MainPage : Page
             Children =
             {
                 Heading("Updates", 18),
-                Body("Check GitHub for a newer Quick Capture Bridge installer. The normal Windows installer will close and update the running app safely."),
+                Body("Check GitHub for a newer Moment installer. The normal Windows installer will close and update the running app safely."),
                 new StackPanel
                 {
                     Orientation = Orientation.Horizontal,
@@ -744,13 +745,21 @@ public sealed partial class MainPage : Page
         labelRow.Children.Add(new TextBlock { Text = label, Opacity = 0.72, VerticalAlignment = VerticalAlignment.Center });
         if (!string.IsNullOrWhiteSpace(help))
         {
-            var helpIcon = new TextBlock
+            var helpIcon = new Border
             {
-                Text = "?",
-                FontSize = 11,
-                FontWeight = FontWeights.SemiBold,
-                Opacity = 0.72,
-                VerticalAlignment = VerticalAlignment.Center
+                Width = 16,
+                Height = 16,
+                CornerRadius = new CornerRadius(5),
+                Background = ThemeBrush("ControlAltFillColorSecondaryBrush", "ControlFillColorDefaultBrush"),
+                VerticalAlignment = VerticalAlignment.Center,
+                Child = new FontIcon
+                {
+                    Glyph = "\uE946",
+                    FontSize = 10,
+                    Foreground = ThemeBrush("TextFillColorSecondaryBrush", "TextFillColorPrimaryBrush"),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                }
             };
             AutomationProperties.SetName(helpIcon, $"{label} help");
             ToolTipService.SetToolTip(helpIcon, help);

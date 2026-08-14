@@ -1,4 +1,4 @@
-namespace QuickCaptureBridgeWinUI;
+namespace Moment;
 
 public static class NativeMessages
 {

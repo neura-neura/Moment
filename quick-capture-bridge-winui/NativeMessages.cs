@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 
-namespace QuickCaptureBridgeWinUI;
+namespace Moment;
 
 /// <summary>
 /// Owns the message-only window used by RegisterHotKey and a low-level
@@ -28,7 +28,7 @@ public sealed class NativeHotkeyWindow : IDisposable
     private static readonly Dictionary<nint, NativeHotkeyWindow> Instances = new();
     private static NativeHotkeyWindow? activeInstance;
 
-    private readonly string className = $"QuickCaptureBridgeHotkeys-{Guid.NewGuid():N}";
+    private readonly string className = $"MomentHotkeys-{Guid.NewGuid():N}";
     private readonly nint moduleHandle;
     private readonly HashSet<uint> lowLevelKeysDown = new();
     private readonly Dictionary<uint, long> lowLevelKeyTimes = new();
@@ -59,7 +59,7 @@ public sealed class NativeHotkeyWindow : IDisposable
             throw new Win32Exception(registerError, $"Could not create the native hotkey window class '{className}'.");
         }
 
-        hwnd = CreateWindowEx(0, className, "Quick Capture Bridge hotkeys", 0,
+        hwnd = CreateWindowEx(0, className, "Moment hotkeys", 0,
             0, 0, 0, 0, new nint(HwndMessage), nint.Zero, moduleHandle, nint.Zero);
         if (hwnd == nint.Zero)
             throw new Win32Exception(Marshal.GetLastWin32Error(), "Could not create the native hotkey window.");

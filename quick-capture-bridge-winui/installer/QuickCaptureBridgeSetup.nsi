@@ -10,13 +10,13 @@ Unicode true
   !error "OUTFILE must point to the generated installer executable."
 !endif
 
-Name "Quick Capture Bridge"
-Caption "Quick Capture Bridge Setup"
+Name "Moment"
+Caption "Moment Setup"
 OutFile "${OUTFILE}"
-InstallDir "$LOCALAPPDATA\Programs\Quick Capture Bridge"
-InstallDirRegKey HKCU "Software\QuickCaptureBridgeWinUI" "InstallLocation"
+InstallDir "$LOCALAPPDATA\Programs\Moment"
+InstallDirRegKey HKCU "Software\Moment" "InstallLocation"
 RequestExecutionLevel user
-BrandingText "Quick Capture Bridge"
+BrandingText "Moment"
 ShowInstDetails show
 ShowUninstDetails show
 SetCompressor /SOLID lzma
@@ -24,19 +24,19 @@ SetCompressor /SOLID lzma
 Icon "${PAYLOAD}\Assets\AppIcon.ico"
 UninstallIcon "${PAYLOAD}\Assets\AppIcon.ico"
 
-VIProductVersion "1.1.1.0"
-VIAddVersionKey "ProductName" "Quick Capture Bridge"
-VIAddVersionKey "CompanyName" "Quick Capture Plugins"
-VIAddVersionKey "FileDescription" "Native WinUI 3 global capture bridge for Obsidian"
-VIAddVersionKey "FileVersion" "1.1.1.0"
-VIAddVersionKey "ProductVersion" "1.1.1.0"
-VIAddVersionKey "LegalCopyright" "Copyright (c) 2026 Quick Capture Plugins"
+VIProductVersion "1.2.0.0"
+VIAddVersionKey "ProductName" "Moment"
+VIAddVersionKey "CompanyName" "neura-neura"
+VIAddVersionKey "FileDescription" "Native WinUI 3 global text and voice capture"
+VIAddVersionKey "FileVersion" "1.2.0.0"
+VIAddVersionKey "ProductVersion" "1.2.0.0"
+VIAddVersionKey "LegalCopyright" "Copyright (c) 2026 neura-neura"
 
 !define MUI_ABORTWARNING
 !define MUI_ICON "${PAYLOAD}\Assets\AppIcon.ico"
 !define MUI_UNICON "${PAYLOAD}\Assets\AppIcon.ico"
-!define MUI_FINISHPAGE_RUN "$INSTDIR\QuickCaptureBridgeWinUI.exe"
-!define MUI_FINISHPAGE_RUN_TEXT "Launch Quick Capture Bridge"
+!define MUI_FINISHPAGE_RUN "$INSTDIR\Moment.exe"
+!define MUI_FINISHPAGE_RUN_TEXT "Launch Moment"
 !define MUI_FINISHPAGE_RUN_CHECKED
 
 !insertmacro MUI_PAGE_WELCOME
@@ -46,37 +46,41 @@ VIAddVersionKey "LegalCopyright" "Copyright (c) 2026 Quick Capture Plugins"
 
 !insertmacro MUI_LANGUAGE "English"
 
-Section "Quick Capture Bridge" InstallSection
+Section "Moment" InstallSection
   SectionIn RO
   ; Allow an existing bridge installation to be upgraded without leaving a
   ; locked executable behind. User settings live in LocalAppData and remain
   ; untouched by this process stop.
+  nsExec::ExecToLog '"$SYSDIR\taskkill.exe" /F /IM Moment.exe'
   nsExec::ExecToLog '"$SYSDIR\taskkill.exe" /F /IM QuickCaptureBridgeWinUI.exe'
   SetOutPath "$INSTDIR"
   File /r "${PAYLOAD}\*"
 
-  CreateDirectory "$SMPROGRAMS\Quick Capture Bridge"
-  CreateShortCut "$SMPROGRAMS\Quick Capture Bridge\Quick Capture Bridge.lnk" "$INSTDIR\QuickCaptureBridgeWinUI.exe" "" "$INSTDIR\Assets\AppIcon.ico" 0 SW_SHOWNORMAL
+  CreateDirectory "$SMPROGRAMS\Moment"
+  CreateShortCut "$SMPROGRAMS\Moment\Moment.lnk" "$INSTDIR\Moment.exe" "" "$INSTDIR\Assets\AppIcon.ico" 0 SW_SHOWNORMAL
 
   WriteUninstaller "$INSTDIR\Uninstall.exe"
-  WriteRegStr HKCU "Software\QuickCaptureBridgeWinUI" "InstallLocation" "$INSTDIR"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\QuickCaptureBridgeWinUI" "DisplayName" "Quick Capture Bridge"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\QuickCaptureBridgeWinUI" "DisplayVersion" "1.1.1"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\QuickCaptureBridgeWinUI" "Publisher" "Quick Capture Plugins"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\QuickCaptureBridgeWinUI" "InstallLocation" "$INSTDIR"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\QuickCaptureBridgeWinUI" "DisplayIcon" "$INSTDIR\QuickCaptureBridgeWinUI.exe"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\QuickCaptureBridgeWinUI" "UninstallString" '"$INSTDIR\Uninstall.exe"'
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\QuickCaptureBridgeWinUI" "QuietUninstallString" '"$INSTDIR\Uninstall.exe" /S'
-  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\QuickCaptureBridgeWinUI" "NoModify" 1
-  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\QuickCaptureBridgeWinUI" "NoRepair" 1
+  WriteRegStr HKCU "Software\Moment" "InstallLocation" "$INSTDIR"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "DisplayName" "Moment"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "DisplayVersion" "1.2.0"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "Publisher" "neura-neura"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "InstallLocation" "$INSTDIR"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "DisplayIcon" "$INSTDIR\Moment.exe"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "UninstallString" '"$INSTDIR\Uninstall.exe"'
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "QuietUninstallString" '"$INSTDIR\Uninstall.exe" /S'
+  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "NoModify" 1
+  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "NoRepair" 1
 SectionEnd
 
 Section "Uninstall"
+  nsExec::ExecToLog '"$SYSDIR\taskkill.exe" /F /IM Moment.exe'
   nsExec::ExecToLog '"$SYSDIR\taskkill.exe" /F /IM QuickCaptureBridgeWinUI.exe'
-  Delete "$SMPROGRAMS\Quick Capture Bridge\Quick Capture Bridge.lnk"
-  RMDir "$SMPROGRAMS\Quick Capture Bridge"
+  Delete "$SMPROGRAMS\Moment\Moment.lnk"
+  RMDir "$SMPROGRAMS\Moment"
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "Moment"
   DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "QuickCaptureBridgeWinUI"
-  DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\QuickCaptureBridgeWinUI"
+  DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment"
   DeleteRegKey HKCU "Software\QuickCaptureBridgeWinUI"
+  DeleteRegKey HKCU "Software\Moment"
   RMDir /r "$INSTDIR"
 SectionEnd

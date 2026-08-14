@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Json;
 
-namespace QuickCaptureBridgeWinUI;
+namespace Moment;
 
 public sealed record UpdateCheckResult(
     bool IsUpdateAvailable,
@@ -21,10 +21,10 @@ public sealed record UpdateCheckResult(
 /// </summary>
 public sealed class UpdateService
 {
-    public const string Repository = "neura-neura/obsidian-plugins";
-    public const string RepositoryUrl = "https://github.com/neura-neura/obsidian-plugins";
-    public const string InstallerAssetName = "QuickCaptureBridgeSetup-x64.exe";
-    public static Version CurrentVersion { get; } = new(1, 1, 1);
+    public const string Repository = "neura-neura/Moment";
+    public const string RepositoryUrl = "https://github.com/neura-neura/Moment";
+    public const string InstallerAssetName = "MomentSetup-x64.exe";
+    public static Version CurrentVersion { get; } = new(1, 2, 0);
 
     private static readonly HttpClient Http = CreateHttpClient();
 
@@ -61,7 +61,7 @@ public sealed class UpdateService
         var message = available
             ? $"Version {latest} is available."
             : latest <= CurrentVersion
-                ? $"Quick Capture Bridge {CurrentVersion} is up to date."
+                ? $"Moment {CurrentVersion} is up to date."
                 : $"Release {latest} was found, but its Windows installer asset is missing.";
         return new UpdateCheckResult(available, CurrentVersion, latest, tag, releaseUrl, installerUrl, checksumUrl, message);
     }
@@ -69,8 +69,8 @@ public sealed class UpdateService
     public async Task<string> DownloadInstallerAsync(UpdateCheckResult update, IProgress<long>? progress = null, CancellationToken cancellationToken = default)
     {
         if (!update.IsUpdateAvailable || string.IsNullOrWhiteSpace(update.InstallerUrl))
-            throw new InvalidOperationException("There is no newer Quick Capture Bridge installer to download.");
-        var destination = Path.Combine(Path.GetTempPath(), $"QuickCaptureBridgeSetup-{update.LatestVersion}-{Guid.NewGuid():N}.exe");
+            throw new InvalidOperationException("There is no newer Moment installer to download.");
+        var destination = Path.Combine(Path.GetTempPath(), $"MomentSetup-{update.LatestVersion}-{Guid.NewGuid():N}.exe");
         using var response = await Http.GetAsync(update.InstallerUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         response.EnsureSuccessStatusCode();
         await using var input = await response.Content.ReadAsStreamAsync(cancellationToken);
@@ -124,6 +124,6 @@ public sealed class UpdateService
     private static HttpClient CreateHttpClient() => new(new HttpClientHandler { AllowAutoRedirect = true })
     {
         Timeout = TimeSpan.FromSeconds(45),
-        DefaultRequestHeaders = { { "User-Agent", "QuickCaptureBridge/1.1.1" }, { "Accept", "application/vnd.github+json" } }
+        DefaultRequestHeaders = { { "User-Agent", "Moment/1.2.0" }, { "Accept", "application/vnd.github+json" } }
     };
 }

@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.Json;
 
-namespace QuickCaptureBridgeWinUI;
+namespace Moment;
 
 /// <summary>
 /// Owns the voice-note side of the bridge. Jobs are kept on disk so closing

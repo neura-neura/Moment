@@ -13,7 +13,7 @@ using Windows.System;
 using Windows.UI;
 using WinRT.Interop;
 
-namespace QuickCaptureBridgeWinUI;
+namespace Moment;
 
 public sealed class BridgeController : IDisposable
 {

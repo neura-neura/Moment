@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace QuickCaptureBridgeWinUI;
+namespace Moment;
 
 public sealed record PluginSettingsMigrationResult(
     int ImportedPluginFiles,

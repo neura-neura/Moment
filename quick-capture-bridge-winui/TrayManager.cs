@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace QuickCaptureBridgeWinUI;
+namespace Moment;
 
 /// <summary>
 /// Native notification-area icon. It keeps the WinUI app independent from
@@ -33,7 +33,7 @@ public sealed class TrayManager : IDisposable
     private const uint NiifError = 0x00000003;
 
     private static readonly WindowProc Proc = StaticWindowProc;
-    private readonly string className = $"QuickCaptureBridgeTray-{Guid.NewGuid():N}";
+    private readonly string className = $"MomentTray-{Guid.NewGuid():N}";
     private readonly nint moduleHandle;
     private readonly nint hwnd;
     private readonly nint menu;
@@ -55,7 +55,7 @@ public sealed class TrayManager : IDisposable
         };
         if (RegisterClassEx(ref windowClass) == 0)
             throw new InvalidOperationException("Could not create the notification tray window.");
-        hwnd = CreateWindowEx(0, className, "Quick Capture Bridge tray", 0,
+        hwnd = CreateWindowEx(0, className, "Moment tray", 0,
             0, 0, 0, 0, new nint(-3), nint.Zero, moduleHandle, nint.Zero);
         if (hwnd == nint.Zero) throw new InvalidOperationException("Could not create the notification tray host.");
         Instances[hwnd] = this;
@@ -65,7 +65,7 @@ public sealed class TrayManager : IDisposable
             ? LoadImage(nint.Zero, iconPath, ImageIcon, 32, 32, LrLoadFromFile)
             : LoadIcon(nint.Zero, new nint(32512));
         menu = CreatePopupMenu();
-        AppendMenu(menu, MfString, 1, "Open Quick Capture Bridge");
+        AppendMenu(menu, MfString, 1, "Open Moment");
         AppendMenu(menu, MfString, 2, "Exit");
 
         var data = new NotifyIconData
@@ -76,7 +76,7 @@ public sealed class TrayManager : IDisposable
             Flags = NifMessage | NifIcon | NifTip,
             CallbackMessage = WmApp + 1,
             Icon = icon,
-            Tip = "Quick Capture Bridge"
+            Tip = "Moment"
         };
         ShellNotifyIcon(NimAdd, ref data);
     }

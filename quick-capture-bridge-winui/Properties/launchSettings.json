@@ -1,9 +1,9 @@
 {
   "profiles": {
-    "QuickCaptureBridgeWinUI (Package)": {
+    "Moment (Package)": {
       "commandName": "MsixPackage"
     },
-    "QuickCaptureBridgeWinUI (Unpackaged)": {
+    "Moment (Unpackaged)": {
       "commandName": "Project"
     }
   }

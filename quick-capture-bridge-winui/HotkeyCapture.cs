@@ -2,7 +2,7 @@ using Microsoft.UI.Xaml.Input;
 using Windows.System;
 using Windows.UI.Core;
 
-namespace QuickCaptureBridgeWinUI;
+namespace Moment;
 
 public static class HotkeyCapture
 {

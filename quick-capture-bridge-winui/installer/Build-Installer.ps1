@@ -10,7 +10,7 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 $project = Join-Path $projectRoot "QuickCaptureBridgeWinUI.csproj"
 $output = Join-Path $projectRoot "dist"
 $staging = Join-Path $output "_published-app"
-$installer = Join-Path $output "QuickCaptureBridgeSetup-$Platform.exe"
+$installer = Join-Path $output "MomentSetup-$Platform.exe"
 $script = Join-Path $PSScriptRoot "QuickCaptureBridgeSetup.nsi"
 $nsis = (Get-Command makensis.exe -ErrorAction SilentlyContinue).Source
 if ([string]::IsNullOrWhiteSpace($nsis)) {
@@ -30,10 +30,10 @@ if (-not (Test-Path -LiteralPath $script)) {
 
 New-Item -ItemType Directory -Path $output -Force | Out-Null
 $outputRoot = (Resolve-Path -LiteralPath $output).Path
-$runningFromOutput = Get-Process -Name QuickCaptureBridgeWinUI -ErrorAction SilentlyContinue |
+$runningFromOutput = Get-Process -Name Moment,QuickCaptureBridgeWinUI -ErrorAction SilentlyContinue |
     Where-Object { $_.Path -and $_.Path.StartsWith($outputRoot, [StringComparison]::OrdinalIgnoreCase) }
 if ($runningFromOutput) {
-    throw "Quick Capture Bridge is running from dist. Close that test instance before rebuilding the installer."
+    throw "Moment is running from dist. Close that test instance before rebuilding the installer."
 }
 
 # dist is a hand-off directory. Remove its previous contents before publishing
@@ -49,21 +49,21 @@ $rid = switch ($Platform) {
     default { "win-x64" }
 }
 
-Write-Host "Publishing unpackaged, self-contained WinUI bridge ($rid)..."
+Write-Host "Publishing unpackaged, self-contained Moment ($rid)..."
 dotnet publish $project -c $Configuration -p:Platform=$Platform -p:RuntimeIdentifier=$rid `
     "-p:PublishDir=$staging\" -p:PublishReadyToRun=false -p:PublishTrimmed=false --no-restore
 if ($LASTEXITCODE -ne 0) { throw "WinUI publish failed." }
 
-$exePath = Join-Path $staging "QuickCaptureBridgeWinUI.exe"
+$exePath = Join-Path $staging "Moment.exe"
 $runtimePath = Join-Path $staging "Microsoft.WindowsAppRuntime.dll"
 $encoderPath = Join-Path $staging "Tools\ffmpeg.exe"
 if (-not (Test-Path -LiteralPath $exePath) -or -not (Test-Path -LiteralPath $runtimePath) -or -not (Test-Path -LiteralPath $encoderPath)) {
-    throw "The publish output is missing the bridge executable, bundled Windows App SDK runtime, or WebM encoder."
+    throw "The publish output is missing the Moment executable, bundled Windows App SDK runtime, or WebM encoder."
 }
 
 $payloadForNsis = $staging -replace '\\', '/'
 $installerForNsis = $installer -replace '\\', '/'
-Write-Host "Building a real NSIS installer with an install wizard, Start menu shortcut, and uninstaller..."
+Write-Host "Building a real NSIS installer for Moment with an install wizard, Start menu shortcut, and uninstaller..."
 & $nsis /V2 "/DPAYLOAD=$payloadForNsis" "/DOUTFILE=$installerForNsis" $script
 if ($LASTEXITCODE -ne 0) { throw "NSIS could not build the Windows installer." }
 

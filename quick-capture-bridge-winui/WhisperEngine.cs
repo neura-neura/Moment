@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
-namespace QuickCaptureBridgeWinUI;
+namespace Moment;
 
 public sealed record WhisperModelInfo(string Id, string Label, string Filename, long Bytes, string Sha256);
 public sealed record WhisperEngineStatus(bool EngineInstalled, bool ModelInstalled, string EngineVersion, string ModelLabel);
@@ -21,7 +21,12 @@ public sealed class NativeWhisperEngine
 
     public NativeWhisperEngine()
     {
-        dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "QuickCaptureBridge", "whisper");
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var momentDirectory = Path.Combine(localAppData, "Moment", "whisper");
+        var legacyDirectory = Path.Combine(localAppData, "QuickCaptureBridge", "whisper");
+        dataDirectory = !Directory.Exists(momentDirectory) && Directory.Exists(legacyDirectory)
+            ? legacyDirectory
+            : momentDirectory;
     }
 
     public async Task<WhisperEngineStatus> GetStatusAsync(BridgeSettings settings, CancellationToken cancellationToken = default)
@@ -65,7 +70,7 @@ public sealed class NativeWhisperEngine
     {
         if (!File.Exists(audioPath)) throw new FileNotFoundException("The saved voice note could not be found.", audioPath);
         var status = await GetStatusAsync(settings, cancellationToken);
-        if (!status.EngineInstalled || !status.ModelInstalled) throw new InvalidOperationException("Whisper is not ready. Install the selected engine and model in Quick Capture Bridge settings.");
+        if (!status.EngineInstalled || !status.ModelInstalled) throw new InvalidOperationException("Whisper is not ready. Install the selected engine and model in Moment settings.");
 
         var work = Path.Combine(Path.GetTempPath(), $"quick-capture-whisper-{Guid.NewGuid():N}");
         Directory.CreateDirectory(work);
@@ -219,7 +224,7 @@ public sealed class NativeWhisperEngine
     private static HttpClient CreateHttpClient() => new(new HttpClientHandler { AllowAutoRedirect = true })
     {
         Timeout = Timeout.InfiniteTimeSpan,
-        DefaultRequestHeaders = { { "User-Agent", "quick-capture-bridge/1.0" } }
+        DefaultRequestHeaders = { { "User-Agent", "Moment/1.2.0" } }
     };
 
     private static void TryDelete(string path) { try { if (File.Exists(path)) File.Delete(path); } catch { } }

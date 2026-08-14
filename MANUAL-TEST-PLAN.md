@@ -7,9 +7,9 @@ Automated checks cover Daily Note transforms, provider settings, templates, inse
 1. Create or back up a disposable vault whose path contains spaces.
 2. Enable Daily Notes or the Periodic Notes daily provider and configure a folder, filename format, and template.
 3. If the vault previously used the two capture plugins, their folders may remain for comparison. Do not depend on them for the native test.
-4. Build the native bridge with `npm run package:bridge`, or run the published installer once the public download link is available. The local installer is `quick-capture-bridge-winui/dist/QuickCaptureBridgeSetup-x64.exe`.
+4. Build Moment with `npm run package:bridge`, or run the published installer. The local installer is `quick-capture-bridge-winui/dist/MomentSetup-x64.exe`.
 5. Verify that the installer opens a real setup wizard (not a 7-Zip extraction dialog), does not request an MSIX certificate, creates a Start menu shortcut, appears in Apps & features, and offers an uninstaller.
-6. Launch Quick Capture Bridge, choose this disposable vault, configure the Text Note and Voice pages, and save. Leave the bridge running. Do not run this manual plan during automated verification.
+6. Launch Moment, choose this disposable vault, configure the Text Note and Voice pages, and save. Leave Moment running. Do not run this manual plan during automated verification.
 
 ## WinUI bridge setup and registration
 
@@ -19,7 +19,7 @@ Automated checks cover Daily Note transforms, provider settings, templates, inse
 4. Click **Register shortcuts**. Verify each row reports **Registered** and the status identifies both bindings.
 5. Intentionally choose the same binding for voice and text. Verify text reports that the bindings must be different while voice remains independently registered.
 6. Register a key already owned by another application. Verify the row reports the conflict and the other row remains usable.
-7. Save settings, close and relaunch the bridge, and verify the vault and bindings persist in `%LOCALAPPDATA%\QuickCaptureBridge\settings.json`.
+7. Save settings, close and relaunch Moment, and verify the vault and bindings persist in `%LOCALAPPDATA%\Moment\settings.json`.
 8. Enable **Start with Windows**, sign out/in or restart the app, and verify the bridge starts minimized and still registers both shortcuts.
 9. With **Keep running in the tray when the window is closed** enabled, close the settings window. Verify the process remains active, the tray icon is visible, and the tray Exit command stops the process.
 10. On a fresh bridge launch, press the voice shortcut once, speak, and press it once to stop. Verify the first stop press closes the recording; a third press must not be required.
@@ -58,7 +58,7 @@ Automated checks cover Daily Note transforms, provider settings, templates, inse
 3. Uncheck **Add capture timestamp** and verify both text and voice entries omit the timestamp heading while still using their normal destinations.
 4. Use the Audio folder and Separate note folder **Browse...** buttons. Verify the selected paths are stored relative to the selected vault and default to `Voice Notes` and `Voice Transcriptions`.
 5. Choose destination **Text Note**, **Separate transcription note**, and **Both**. Verify Separate note folder is hidden only for Text Note.
-6. Hover the `?` help markers and verify each tooltip uses the native system-colored rounded tooltip and explains the associated setting.
+6. Hover the Fluent `Info` help markers and verify each tooltip uses the native system-colored rounded tooltip and explains the associated setting.
 
 ## Local Whisper
 

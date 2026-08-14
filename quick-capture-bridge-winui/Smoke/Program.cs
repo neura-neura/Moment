@@ -4,7 +4,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
-using QuickCaptureBridgeWinUI;
+using Moment;
 
 var root = Path.Combine(Path.GetTempPath(), $"quick-capture-bridge-smoke-{Guid.NewGuid():N}");
 Directory.CreateDirectory(root);

@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
-namespace QuickCaptureBridgeWinUI;
+namespace Moment;
 
 /// <summary>
 /// Owns the WinUI entry point so the unpackaged runtime is prepared before

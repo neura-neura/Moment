@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace QuickCaptureBridgeWinUI;
+namespace Moment;
 
 public sealed class BridgeSettings
 {
@@ -100,6 +100,10 @@ public sealed class SettingsStore
 {
     private readonly string path = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "Moment",
+        "settings.json");
+    private readonly string legacyPath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "QuickCaptureBridge",
         "settings.json");
 
@@ -107,8 +111,9 @@ public sealed class SettingsStore
     {
         try
         {
-            if (!File.Exists(path)) return new BridgeSettings();
-            return JsonSerializer.Deserialize<BridgeSettings>(File.ReadAllText(path), new JsonSerializerOptions
+            var source = File.Exists(path) ? path : legacyPath;
+            if (!File.Exists(source)) return new BridgeSettings();
+            return JsonSerializer.Deserialize<BridgeSettings>(File.ReadAllText(source), new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             }) ?? new BridgeSettings();

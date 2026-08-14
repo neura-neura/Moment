@@ -16,7 +16,7 @@
   <mp:PhoneIdentity PhoneProductId="F26ECFFB-7B7C-434E-B2E0-3982D3CFEC16" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>Quick Capture Bridge</DisplayName>
+    <DisplayName>Moment</DisplayName>
     <PublisherDisplayName>Neura</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -35,7 +35,7 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="Quick Capture Bridge"
+        DisplayName="Moment"
         Description="Global text and voice capture for Obsidian"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"

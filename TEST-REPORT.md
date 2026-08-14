@@ -29,14 +29,14 @@ It creates a temporary vault, follows a Daily Notes provider/template, inserts n
 
 The local x64 installer was regenerated at:
 
-`quick-capture-bridge-winui/dist/QuickCaptureBridgeSetup-x64.exe`
+`quick-capture-bridge-winui/dist/MomentSetup-x64.exe`
 
-SHA-256: `05E422B0A5457363EB40684D7578AEFC50BAF984941753FB845657C211EF1A30`
-Size: 142,765,915 bytes
+SHA-256: `D93502B876DC41E8DF9E498BAF6B8EB6AD43A5B0928D2799F266509D5E1E46D9`
+Size: 144,296,651 bytes
 
 It is a real NSIS setup executable with a per-user install directory, Start menu shortcut, Add/Remove Programs registration, and uninstaller. It is not an MSIX package and does not require a development certificate. A silent disposable install created the app executable and uninstaller; the uninstaller then removed the target successfully. `dist` contains only the installer.
 
-The Settings UI now exposes Text Note/Voice naming, conditional Target heading and Missing heading fields, a shared timestamp toggle, vault-relative folder pickers, native tooltip help icons, a GitHub update button, and the `Made by neura-neura` repository link.
+The Settings UI now exposes Moment branding, conditional Target heading and Missing heading fields, a shared timestamp toggle, vault-relative folder pickers, a native Fluent `Info` tooltip icon, a GitHub update button, and the `Made by neura-neura` repository link.
 
 ## Whisper validation
 
