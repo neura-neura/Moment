@@ -1,0 +1,20 @@
+{
+  "name": "quick-capture-obsidian-plugins",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "quick-daily-capture",
+    "quick-voice-notes"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "lint": "npm run lint --workspaces",
+    "test": "npm run test --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build && npm run build:bridge",
+    "package": "npm run package --workspaces",
+    "build:bridge": "dotnet build quick-capture-bridge-winui/QuickCaptureBridgeWinUI.csproj -c Release -p:Platform=x64 -p:PublishReadyToRun=false -p:PublishTrimmed=false",
+    "publish:bridge": "dotnet publish quick-capture-bridge-winui/QuickCaptureBridgeWinUI.csproj -c Release -p:Platform=x64 -p:PublishProfile=win-x64 -p:PublishReadyToRun=false -p:PublishTrimmed=false",
+    "package:bridge": "powershell -NoProfile -ExecutionPolicy Bypass -File quick-capture-bridge-winui/installer/Build-Installer.ps1"
+  }
+}

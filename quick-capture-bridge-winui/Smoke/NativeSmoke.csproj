@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="..\BridgeSettings.cs" Link="BridgeSettings.cs" />
+    <Compile Include="..\DailyNoteService.cs" Link="DailyNoteService.cs" />
+    <Compile Include="..\PluginSettingsMigration.cs" Link="PluginSettingsMigration.cs" />
+    <Compile Include="..\VaultInbox.cs" Link="VaultInbox.cs" />
+    <Compile Include="..\NativeVoiceProcessor.cs" Link="NativeVoiceProcessor.cs" />
+    <Compile Include="..\WhisperEngine.cs" Link="WhisperEngine.cs" />
+    <Compile Include="..\NativeMessages.cs" Link="NativeMessages.cs" />
+    <Compile Include="..\NativeConstants.cs" Link="NativeConstants.cs" />
+  </ItemGroup>
+</Project>

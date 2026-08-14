@@ -1,0 +1,16 @@
+node_modules/
+dist/
+coverage/
+*.zip
+*.log
+.DS_Store
+quick-capture-bridge/bin/
+quick-capture-bridge/obj/
+quick-capture-bridge/publish/
+quick-capture-bridge-winui/bin/
+quick-capture-bridge-winui/obj/
+quick-capture-bridge-winui/dist/
+**/bin/
+**/obj/
+**/publish/
+quick-capture-bridge-winui/_installer-smoke/

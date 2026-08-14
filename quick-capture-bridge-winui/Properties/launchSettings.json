@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "QuickCaptureBridgeWinUI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "QuickCaptureBridgeWinUI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

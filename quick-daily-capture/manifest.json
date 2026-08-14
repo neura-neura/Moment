@@ -1,0 +1,9 @@
+{
+  "id": "quick-daily-capture",
+  "name": "Quick Daily Capture",
+  "version": "1.1.0",
+  "minAppVersion": "1.13.0",
+  "description": "Capture text into today's Daily Note with a focused, keyboard-first popup.",
+  "author": "Neura",
+  "isDesktopOnly": false
+}

@@ -1,0 +1,1 @@
+quick-capture-bridge-winui/Tools/ffmpeg.exe filter=lfs diff=lfs merge=lfs -text
