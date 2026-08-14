@@ -25,9 +25,7 @@ The bridge remains useful while Obsidian is closed or another application, inclu
 
 ## Windows installer (EXE)
 
-The public download URL is intentionally **pending publication**. Once released, this section will contain the real download link:
-
-> Download Quick Capture Bridge for Windows - link pending publication.
+Download the current Windows installer from the public [Quick Capture Bridge v1.1.1 release](https://github.com/neura-neura/obsidian-plugins/releases/tag/v1.1.1). Choose `QuickCaptureBridgeSetup-x64.exe` from the release assets.
 
 For local development, build the native Windows installer:
 
