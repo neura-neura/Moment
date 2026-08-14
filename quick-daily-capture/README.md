@@ -113,7 +113,7 @@ npm run package -w quick-daily-capture
 
 ## Limitations
 
-For global capture while Obsidian is closed, use [Moment (WinUI 3)](../quick-capture-bridge-winui/README.md). It accepts any key combination (including F13-F24), shows a compact PiP panel, and writes directly to the selected vault. Moment is independent, so this plugin can be disabled or uninstalled; it remains available for users who prefer the in-Obsidian command. Download the current Windows installer from the public [Moment v1.2.3 release](https://github.com/neura-neura/Moment/releases/tag/v1.2.3).
+For global capture while Obsidian is closed, use [Moment (WinUI 3)](../quick-capture-bridge-winui/README.md). It accepts any key combination (including F13-F24), shows a compact PiP panel, and writes directly to the selected vault. Moment is independent, so this plugin can be disabled or uninstalled; it remains available for users who prefer the in-Obsidian command. Download the current Windows installer from the public [Moment v1.2.4 release](https://github.com/neura-neura/Moment/releases/tag/v1.2.4).
 
 - Obsidian does not expose Daily Notes settings through a public plugin API. The maintained `obsidian-daily-notes-interface` compatibility package is isolated behind the Daily Note service for provider detection, settings, template handling, and note creation. Actual content mutation uses the public atomic vault API.
 - Heading matching supports Markdown ATX headings (`#` through `######`), not Setext headings.

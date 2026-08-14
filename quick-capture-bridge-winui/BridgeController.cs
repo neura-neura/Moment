@@ -437,6 +437,7 @@ public sealed class VoicePiP : Window
     private readonly BridgeSettings settings;
     private readonly List<Border> waveBars = new();
     private readonly Border surface;
+    private readonly InfoBar noSignalInfoBar;
     private readonly ScaleTransform scale = new() { ScaleX = 0.9, ScaleY = 0.9 };
     private readonly object writerLock = new();
     private readonly WaveFormat recordingFormat = new(16_000, 16, 1);
@@ -452,6 +453,7 @@ public sealed class VoicePiP : Window
     private Microsoft.UI.Dispatching.DispatcherQueueTimer? waveTimer;
     private Microsoft.UI.Dispatching.DispatcherQueueTimer? closeTimer;
     private int animationTick;
+    private bool noSignalWarningShown;
     private int? encoderExitCode;
     private string? encoderError;
     private readonly Button stopButton;
@@ -551,6 +553,43 @@ public sealed class VoicePiP : Window
             Children = { stopButton, cancelButton }
         };
 
+        var recordingGrid = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+                new ColumnDefinition { Width = GridLength.Auto }
+            },
+            Children = { recordingIndicator, waves, actions }
+        };
+        Grid.SetColumn(waves, 1);
+        Grid.SetColumn(actions, 2);
+
+        noSignalInfoBar = new InfoBar
+        {
+            IsOpen = false,
+            IsClosable = false,
+            IsIconVisible = true,
+            Severity = InfoBarSeverity.Warning,
+            Title = "No audio detected",
+            Message = "Check the selected microphone.",
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            Margin = new Thickness(0, 4, 0, 0)
+        };
+        AutomationProperties.SetName(noSignalInfoBar, "No audio detected. Check the selected microphone.");
+
+        var recordingLayout = new Grid
+        {
+            RowDefinitions =
+            {
+                new RowDefinition { Height = new GridLength(60) },
+                new RowDefinition { Height = GridLength.Auto }
+            },
+            Children = { recordingGrid, noSignalInfoBar }
+        };
+        Grid.SetRow(noSignalInfoBar, 1);
+
         surface = new Border
         {
             // With the status copy removed, keep the island deliberately compact
@@ -566,19 +605,13 @@ public sealed class VoicePiP : Window
             BorderThickness = new Thickness(1),
             RenderTransform = scale,
             RenderTransformOrigin = new Windows.Foundation.Point(0.5, 0.5),
-            Child = new Grid
-            {
-                ColumnDefinitions = { new ColumnDefinition { Width = GridLength.Auto }, new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, new ColumnDefinition { Width = GridLength.Auto } },
-                Children = { recordingIndicator, waves, actions }
-            }
+            Child = recordingLayout
         };
-        Grid.SetColumn((surface.Child as Grid)!.Children[1] as FrameworkElement, 1);
-        Grid.SetColumn((surface.Child as Grid)!.Children[2] as FrameworkElement, 2);
         Content = surface;
         Activated += (_, _) =>
         {
             var hwnd = WindowNative.GetWindowHandle(this);
-            NativeWindowUtilities.ConfigureOverlay(hwnd, 260, 60, OverlayPlacement.CenterTop, false);
+            NativeWindowUtilities.ConfigureOverlay(hwnd, 260, noSignalInfoBar.IsOpen ? 128 : 60, OverlayPlacement.CenterTop, false);
             AnimateIn();
             if (!started)
             {
@@ -643,6 +676,9 @@ public sealed class VoicePiP : Window
             encoderError = null;
             detectedAudio = false;
             audioLevel = 0;
+            noSignalWarningShown = false;
+            noSignalInfoBar.IsOpen = false;
+            surface.Height = 60;
             encoder = StartWebmEncoder(audioPath, recordingFormat, settings.AudioBitsPerSecond);
             encoderInput = encoder.StandardInput.BaseStream;
             var inputDeviceIndex = AudioInputDevices.ResolveIndex(settings.AudioInputDevice);
@@ -668,6 +704,7 @@ public sealed class VoicePiP : Window
 
     private void AnimateWaves()
     {
+        if (stopping) return;
         animationTick++;
         var level = Math.Clamp(Volatile.Read(ref audioLevel), 0d, 1d);
         for (var i = 0; i < waveBars.Count; i++)
@@ -676,54 +713,42 @@ public sealed class VoicePiP : Window
             var motion = Math.Abs(phase - 4) / 4d;
             waveBars[i].Height = 7 + level * 22 + motion * 5;
         }
+
+        if (!Volatile.Read(ref detectedAudio) && !noSignalWarningShown && DateTimeOffset.Now - startedAt >= TimeSpan.FromSeconds(2))
+            ShowNoSignalWarning(final: false);
+        else if (Volatile.Read(ref detectedAudio) && noSignalWarningShown)
+            HideNoSignalWarning();
     }
 
     private void ShowNoAudioDetected()
     {
         const string title = "No audio detected";
-        const string detail = "Check the selected microphone and try again.";
+        const string detail = "Recording discarded. Check the selected microphone.";
         Failed?.Invoke($"{title}. {detail}");
+        ShowNoSignalWarning(final: true);
+        CloseSoon(1800);
+    }
 
-        waveTimer?.Stop();
-        surface.Child = new Grid
-        {
-            ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }
-            },
-            Children =
-            {
-                new SymbolIcon
-                {
-                    Symbol = Symbol.Microphone,
-                    Foreground = NativeRecordingBrush(),
-                    Width = 20,
-                    Height = 20,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Margin = new Thickness(2, 0, 10, 0)
-                },
-                new StackPanel
-                {
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Spacing = 1,
-                    Children =
-                    {
-                        new TextBlock { Text = title, FontSize = 14, FontWeight = FontWeights.SemiBold },
-                        new TextBlock { Text = detail, FontSize = 12, Opacity = 0.72, TextWrapping = TextWrapping.WrapWholeWords }
-                    }
-                }
-            }
-        };
-        Grid.SetColumn((surface.Child as Grid)!.Children[1] as FrameworkElement, 1);
-        AutomationProperties.SetName(surface, $"{title}. {detail}");
-        surface.Opacity = 1;
-        scale.ScaleX = 1;
-        scale.ScaleY = 1;
+    private void ShowNoSignalWarning(bool final)
+    {
+        noSignalWarningShown = true;
+        noSignalInfoBar.Title = "No audio detected";
+        noSignalInfoBar.Message = final
+            ? "Recording discarded. Check the selected microphone."
+            : "Speak or check the selected microphone.";
+        noSignalInfoBar.IsOpen = true;
+        surface.Height = 128;
         var hwnd = WindowNative.GetWindowHandle(this);
-        NativeWindowUtilities.ConfigureOverlay(hwnd, 260, 60, OverlayPlacement.CenterTop, true);
-        NativeWindowUtilities.Activate(hwnd);
-        CloseSoon(1500);
+        NativeWindowUtilities.ConfigureOverlay(hwnd, 260, 128, OverlayPlacement.CenterTop, false);
+    }
+
+    private void HideNoSignalWarning()
+    {
+        noSignalWarningShown = false;
+        noSignalInfoBar.IsOpen = false;
+        surface.Height = 60;
+        var hwnd = WindowNative.GetWindowHandle(this);
+        NativeWindowUtilities.ConfigureOverlay(hwnd, 260, 60, OverlayPlacement.CenterTop, false);
     }
 
     private void AnimateIn()

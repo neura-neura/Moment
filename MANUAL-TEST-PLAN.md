@@ -42,15 +42,16 @@ Automated checks cover Daily Note transforms, provider settings, templates, inse
 
 1. On the Voice page, choose an input device, audio folder, bitrate, destination, audio-embed option, and voice prefix. Verify the controls persist after saving. If Windows default is a virtual cable, choose the physical microphone explicitly.
 2. Press the voice shortcut. Verify only the compact native top-center island appears, recording starts automatically, and it shows the red recording ring, moving level bars, and native Stop/Cancel controls without status text.
-3. Speak for several seconds, then press the same shortcut again. Verify the island disappears immediately without a disabled-button flash and a WebM/Opus file exists under the selected audio folder.
-4. Verify a durable JSON job appears under `.quick-capture\bridge-inbox` and points to the WebM file with the correct relative path and MIME type.
-5. With destination **Separate transcription note** and transcription disabled, verify a Markdown note is created with the optional WebM embed.
-6. With destination **Text Note**, verify the audio entry is inserted using the recording start timestamp. With **Both**, verify both Markdown destinations exist.
-7. Deny microphone permission and verify a human-readable Windows microphone error is shown without leaving a partial job.
-8. Start another recording, press Escape or Cancel, and verify no new Markdown/job output is created.
-9. Close Obsidian completely, capture text and voice, then open Obsidian. Verify all output is already present without requiring either capture plugin.
-10. Inspect `.quick-capture\bridge-processed` and `.quick-capture\bridge-failed`. Force a missing audio path and verify the failure sidecar is retained for diagnosis. Record once from a muted/silent device and stop: verify the compact popup says **No audio detected**, the WebM is discarded, no job is enqueued, and Whisper is not invoked. Existing legacy silent jobs should explain that Whisper is installed and no speech was detected without telling the user to reinstall it.
-11. Change the bridge to a second vault, repeat one text and one voice capture, and verify output routes only to the second vault.
+3. Leave the selected microphone silent for about two seconds. Verify a native WinUI 3 Warning InfoBar appears inside the recording island while recording is still active, explaining that no audio is detected. Speak into the selected microphone and verify the InfoBar closes without interrupting recording.
+4. Speak for several seconds, then press the same shortcut again. Verify the island disappears immediately without a disabled-button flash and a WebM/Opus file exists under the selected audio folder.
+5. Verify a durable JSON job appears under `.quick-capture\bridge-inbox` and points to the WebM file with the correct relative path and MIME type.
+6. With destination **Separate transcription note** and transcription disabled, verify a Markdown note is created with the optional WebM embed.
+7. With destination **Text Note**, verify the audio entry is inserted using the recording start timestamp. With **Both**, verify both Markdown destinations exist.
+8. Deny microphone permission and verify a human-readable Windows microphone error is shown without leaving a partial job.
+9. Start another recording, press Escape or Cancel, and verify no new Markdown/job output is created.
+10. Close Obsidian completely, capture text and voice, then open Obsidian. Verify all output is already present without requiring either capture plugin.
+11. Inspect `.quick-capture\bridge-processed` and `.quick-capture\bridge-failed`. Force a missing audio path and verify the failure sidecar is retained for diagnosis. Record once from a muted/silent device and stop: verify the InfoBar has already warned during recording, the WebM is discarded, no job is enqueued, and Whisper is not invoked. Existing legacy silent jobs should explain that Whisper is installed and no speech was detected without telling the user to reinstall it.
+12. Change the bridge to a second vault, repeat one text and one voice capture, and verify output routes only to the second vault.
 
 ## Text Note and Voice settings
 

@@ -47,10 +47,14 @@ public partial class App : Application
         var startedInBackground = args.Arguments.Contains("--background", StringComparison.OrdinalIgnoreCase);
         var startedInForeground = args.Arguments.Contains("--foreground", StringComparison.OrdinalIgnoreCase);
         var launchSettings = new SettingsStore().Load();
-        if (startedInBackground || (launchSettings.StartWithWindows && launchSettings.StartMinimized))
-            NativeWindowUtilities.Hide(mainWindow.NativeHandle);
-        else if (startedInForeground)
+        // The installer and an explicit user launch must win over the
+        // background startup preference. StartMinimized is only for the
+        // Windows-login/tray path, never for the Finish-page Launch Moment
+        // action.
+        if (startedInForeground)
             NativeWindowUtilities.RestoreAndActivate(mainWindow.NativeHandle);
+        else if (startedInBackground || (launchSettings.StartWithWindows && launchSettings.StartMinimized))
+            NativeWindowUtilities.Hide(mainWindow.NativeHandle);
     }
 
     private void MainWindowClosed(object sender, WindowEventArgs args)
