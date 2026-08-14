@@ -31,8 +31,8 @@ The local x64 installer was regenerated at:
 
 `quick-capture-bridge-winui/dist/MomentSetup-x64.exe`
 
-SHA-256: `D93502B876DC41E8DF9E498BAF6B8EB6AD43A5B0928D2799F266509D5E1E46D9`
-Size: 144,296,651 bytes
+SHA-256: `486DBE628B86EC7A6A07509BCBAF380338832AB75F58B82AC6C2C4621A084F4E`
+Size: 144,347,045 bytes
 
 It is a real NSIS setup executable with a per-user install directory, Start menu shortcut, Add/Remove Programs registration, and uninstaller. It is not an MSIX package and does not require a development certificate. A silent disposable install created the app executable and uninstaller; the uninstaller then removed the target successfully. `dist` contains only the installer.
 

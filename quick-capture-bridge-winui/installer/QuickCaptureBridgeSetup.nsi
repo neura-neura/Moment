@@ -24,12 +24,12 @@ SetCompressor /SOLID lzma
 Icon "${PAYLOAD}\Assets\AppIcon.ico"
 UninstallIcon "${PAYLOAD}\Assets\AppIcon.ico"
 
-VIProductVersion "1.2.0.0"
+VIProductVersion "1.2.1.0"
 VIAddVersionKey "ProductName" "Moment"
 VIAddVersionKey "CompanyName" "neura-neura"
 VIAddVersionKey "FileDescription" "Native WinUI 3 global text and voice capture"
-VIAddVersionKey "FileVersion" "1.2.0.0"
-VIAddVersionKey "ProductVersion" "1.2.0.0"
+VIAddVersionKey "FileVersion" "1.2.1.0"
+VIAddVersionKey "ProductVersion" "1.2.1.0"
 VIAddVersionKey "LegalCopyright" "Copyright (c) 2026 neura-neura"
 
 !define MUI_ABORTWARNING
@@ -62,7 +62,7 @@ Section "Moment" InstallSection
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   WriteRegStr HKCU "Software\Moment" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "DisplayName" "Moment"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "DisplayVersion" "1.2.0"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "DisplayVersion" "1.2.1"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "Publisher" "neura-neura"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "DisplayIcon" "$INSTDIR\Moment.exe"
@@ -70,6 +70,7 @@ Section "Moment" InstallSection
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "QuietUninstallString" '"$INSTDIR\Uninstall.exe" /S'
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "NoModify" 1
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Moment" "NoRepair" 1
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "QuickCaptureBridgeWinUI"
 SectionEnd
 
 Section "Uninstall"
