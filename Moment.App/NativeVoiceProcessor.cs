@@ -199,7 +199,7 @@ public sealed class NativeVoiceProcessor : IDisposable
 
     private static string WriteSeparateNote(string body, DateTimeOffset startedAt, MomentSettings current)
     {
-        var folder = WorkspacePath.Sanitize(string.IsNullOrWhiteSpace(current.TranscriptionFolder) ? "Voice Transcriptions" : current.TranscriptionFolder);
+        var folder = WorkspacePath.ValidateFolder(string.IsNullOrWhiteSpace(current.TranscriptionFolder) ? "Voice Transcriptions" : current.TranscriptionFolder, "Transcriptions folder");
         var stem = MomentFilename.Format(startedAt, current.TranscriptionFilenameFormat, current.TranscriptionFilenamePrefix);
         var relative = WorkspacePath.Combine(folder, $"{stem}.md");
         var path = WorkspacePath.Resolve(current.WorkspacePath, relative);

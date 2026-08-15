@@ -26,6 +26,7 @@ public sealed partial class MainPage : Page
     private readonly TextBox recurringNoteTimestampText = new();
     private readonly TextBox recurringNoteFilenameFormatText = new() { PlaceholderText = "YYYY-MM-DD" };
     private readonly TextBox recurringNoteFilenamePrefixText = new() { PlaceholderText = "Optional prefix" };
+    private readonly TextBox recurringNoteFolderText = new();
     private readonly ComboBox recurringNoteInsertionCombo = new();
     private readonly ComboBox recurringNoteMissingHeadingCombo = new();
     private readonly CheckBox timestampEnabledCheck = new() { Content = "Add capture timestamp" };
@@ -199,6 +200,7 @@ public sealed partial class MainPage : Page
             {
                 Heading("Template", 18),
                 Body("Moment follows the configured recurring-note folder, filename format, and template. If a note for the current day does not exist, Moment creates it before inserting the text note. Optional workspace metadata can provide these settings automatically; if it is absent, Moment uses its own defaults."),
+                Labeled("Text notes folder", FolderEditor(recurringNoteFolderText, ChooseRecurringNoteFolderClick), "Folder where recurring Text Notes are saved. It must be inside the selected workspace. Default: the compatible workspace folder, or the workspace root when no metadata is available."),
                 Labeled("Insertion", recurringNoteInsertionCombo, "Where the text note is placed in the recurring note."),
                 recurringNoteTargetHeadingField,
                 recurringNoteMissingHeadingField,
@@ -484,6 +486,9 @@ public sealed partial class MainPage : Page
         recurringNoteTimestampText.Text = settings.RecurringNoteTimestampFormat;
         recurringNoteFilenameFormatText.Text = settings.RecurringNoteFilenameFormat;
         recurringNoteFilenamePrefixText.Text = settings.RecurringNoteFilenamePrefix;
+        recurringNoteFolderText.Text = string.IsNullOrWhiteSpace(settings.RecurringNoteFolder)
+            ? ReadCompatibleRecurringNoteFolder()
+            : settings.RecurringNoteFolder;
         timestampEnabledCheck.IsChecked = settings.IncludeTimestamp;
         recurringNoteTimestampText.IsEnabled = settings.IncludeTimestamp;
         recurringNoteEnterToSaveCheck.IsChecked = settings.RecurringNoteEnterToSave;
@@ -532,6 +537,12 @@ public sealed partial class MainPage : Page
         if (recurringNoteMissingHeadingField is not null) recurringNoteMissingHeadingField.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
     }
 
+    private string ReadCompatibleRecurringNoteFolder()
+    {
+        if (string.IsNullOrWhiteSpace(settings.WorkspacePath) || !Directory.Exists(settings.WorkspacePath)) return "";
+        return RecurringNoteProviderSettings.Load(settings.WorkspacePath).Folder;
+    }
+
     private void UpdateTranscriptionFolderVisibility()
     {
         var needsSeparateNote = transcriptionDestinationCombo.SelectedIndex is 0 or 2;
@@ -550,10 +561,13 @@ public sealed partial class MainPage : Page
         if (folder is not null)
         {
             settings.WorkspacePath = folder.Path;
+            settings.RecurringNoteFolder = "";
             UpdateFields();
             statusBar.Text = "Workspace selected. Save settings before capturing.";
         }
     }
+
+    private async void ChooseRecurringNoteFolderClick(object sender, RoutedEventArgs args) => await ChooseWorkspaceRelativeFolderAsync(recurringNoteFolderText, ReadCompatibleRecurringNoteFolder());
 
     private async void ChooseAudioFolderClick(object sender, RoutedEventArgs args) => await ChooseWorkspaceRelativeFolderAsync(audioFolderText, "Voice Notes");
 
@@ -570,7 +584,7 @@ public sealed partial class MainPage : Page
     {
         if (string.IsNullOrWhiteSpace(settings.WorkspacePath) || !Directory.Exists(settings.WorkspacePath))
         {
-            statusBar.Text = "Choose an existing workspace before selecting a subfolder.";
+            ReportFolderError("Choose an existing workspace before selecting a subfolder.");
             return;
         }
         var picker = new FolderPicker();
@@ -584,15 +598,30 @@ public sealed partial class MainPage : Page
             var selected = Path.GetFullPath(folder.Path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
             var relative = Path.GetRelativePath(root, selected);
             if (relative == ".") relative = fallback;
-            if (Path.IsPathRooted(relative) || relative.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }).Any(part => part == ".."))
-                throw new InvalidOperationException("Choose a folder inside the selected workspace.");
-            target.Text = relative.Replace(Path.DirectorySeparatorChar, '/');
+            var label = ReferenceEquals(target, recurringNoteFolderText) ? "Text notes folder" :
+                ReferenceEquals(target, audioFolderText) ? "Audio folder" : "Transcriptions folder";
+            var validated = ValidateWorkspaceFolder(relative, label);
+            target.Text = validated;
             statusBar.Text = $"Folder selected: {target.Text}";
         }
         catch (Exception error)
         {
-            statusBar.Text = error.Message;
+            ReportFolderError(error.Message);
         }
+    }
+
+    private string ValidateWorkspaceFolder(string value, string label, string? fallback = null)
+    {
+        if (string.IsNullOrWhiteSpace(settings.WorkspacePath) || !Directory.Exists(settings.WorkspacePath))
+            throw new InvalidOperationException("Choose an existing workspace before selecting folders.");
+        var candidate = string.IsNullOrWhiteSpace(value) ? fallback ?? "" : value.Trim();
+        return WorkspacePath.ValidateFolder(candidate, label).Replace('/', Path.DirectorySeparatorChar);
+    }
+
+    private void ReportFolderError(string message)
+    {
+        statusBar.Text = message;
+        NotificationRequested?.Invoke("Folder selection blocked", message, true);
     }
 
     private void HotkeyFieldGotFocus(object sender, RoutedEventArgs args)
@@ -638,6 +667,21 @@ public sealed partial class MainPage : Page
 
     private void SaveClick(object sender, RoutedEventArgs args)
     {
+        string recurringNoteFolder;
+        string audioFolder;
+        string transcriptionFolder;
+        try
+        {
+            recurringNoteFolder = ValidateWorkspaceFolder(recurringNoteFolderText.Text, "Text notes folder");
+            audioFolder = ValidateWorkspaceFolder(audioFolderText.Text, "Audio folder", "Voice Notes");
+            transcriptionFolder = ValidateWorkspaceFolder(transcriptionFolderText.Text, "Transcriptions folder", "Voice Transcriptions");
+        }
+        catch (Exception error)
+        {
+            ReportFolderError(error.Message);
+            return;
+        }
+
         settings.RecurringNoteInsertionLocation = recurringNoteInsertionCombo.SelectedIndex switch { 1 => "beginning", 2 => "under-heading", _ => "end" };
         settings.RecurringNoteTargetHeading = recurringNoteHeadingText.Text.Trim();
         settings.RecurringNoteMissingHeadingBehavior = recurringNoteMissingHeadingCombo.SelectedIndex switch { 1 => "end", 2 => "error", _ => "create" };
@@ -647,7 +691,8 @@ public sealed partial class MainPage : Page
         settings.IncludeTimestamp = timestampEnabledCheck.IsChecked == true;
         settings.RecurringNoteEnterToSave = recurringNoteEnterToSaveCheck.IsChecked == true;
         settings.RecurringNoteCloseAfterSave = recurringNoteCloseAfterSaveCheck.IsChecked == true;
-        settings.AudioFolder = string.IsNullOrWhiteSpace(audioFolderText.Text) ? "Voice Notes" : audioFolderText.Text.Trim();
+        settings.RecurringNoteFolder = recurringNoteFolder;
+        settings.AudioFolder = audioFolder;
         settings.VoiceFilenameFormat = string.IsNullOrWhiteSpace(voiceFilenameFormatText.Text) ? MomentFilename.DefaultFormat : voiceFilenameFormatText.Text.Trim();
         settings.VoiceFilenamePrefix = voiceFilenamePrefixText.Text.Trim();
         settings.AudioInputDevice = audioInputDeviceCombo.SelectedValue as string ?? AudioInputDevices.DefaultKey;
@@ -655,7 +700,7 @@ public sealed partial class MainPage : Page
         settings.EnableTranscription = transcriptionCheck.IsChecked == true;
         settings.WhisperLanguage = LanguageCode(whisperLanguageCombo.SelectedItem as string);
         settings.WhisperModel = (whisperModelCombo.SelectedItem as WhisperModelInfo)?.Id ?? "base";
-        settings.TranscriptionFolder = string.IsNullOrWhiteSpace(transcriptionFolderText.Text) ? "Voice Transcriptions" : transcriptionFolderText.Text.Trim();
+        settings.TranscriptionFolder = transcriptionFolder;
         settings.TranscriptionFilenameFormat = string.IsNullOrWhiteSpace(transcriptionFilenameFormatText.Text) ? MomentFilename.DefaultFormat : transcriptionFilenameFormatText.Text.Trim();
         settings.TranscriptionFilenamePrefix = transcriptionFilenamePrefixText.Text.Trim();
         settings.IncludeAudioEmbed = includeAudioEmbedCheck.IsChecked == true;

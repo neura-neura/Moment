@@ -23,14 +23,16 @@ Automated checks cover recurring-note transforms, templates, insertion modes, he
 
 1. Choose the disposable workspace and save settings.
 2. Verify the UI says **Selected workspace** and the button says **Choose workspace...**.
-3. Configure a filename format with localized month text and a prefix such as `Journal-`.
-4. Verify **Recurring note** explains that one new note is created for each calendar day.
-5. Test **End of recurring note**, **Beginning of recurring note**, and **Under a heading**.
-6. For **Under a heading**, verify **Target heading** and **Missing heading** appear only for that insertion mode.
-7. Test all missing-heading behaviors: create the heading, append at the end, and show an error.
-8. Toggle the timestamp option off and confirm a text capture contains no timestamp heading. Toggle it on and confirm the configured format is used.
-9. Capture twice with the same filename. Verify the existing recurring note is reused and the second entry is appended without overwriting the first.
-10. If optional workspace metadata is present, verify Moment reads the folder, filename format, and template. Remove or rename those files and verify capture still works with Moment's built-in defaults.
+3. Choose a **Text notes folder** with **Browse...** and verify it is displayed relative to the workspace.
+4. Attempt to choose a folder outside the workspace. Verify the field is unchanged and a visible folder-selection error explains that the folder must be inside the selected workspace.
+5. Configure a filename format with localized month text and a prefix such as `Journal-`.
+6. Verify **Recurring note** explains that one new note is created for each calendar day.
+7. Test **End of recurring note**, **Beginning of recurring note**, and **Under a heading**.
+8. For **Under a heading**, verify **Target heading** and **Missing heading** appear only for that insertion mode.
+9. Test all missing-heading behaviors: create the heading, append at the end, and show an error.
+10. Toggle the timestamp option off and confirm a text capture contains no timestamp heading. Toggle it on and confirm the configured format is used.
+11. Capture twice with the same filename. Verify the existing recurring note is reused and the second entry is appended without overwriting the first.
+12. If optional workspace metadata is present, verify Moment reads the folder, filename format, and template. Remove or rename those files and verify capture still works with Moment's built-in defaults.
 
 ## 4. Global shortcuts and text PiP
 
@@ -44,23 +46,25 @@ Automated checks cover recurring-note transforms, templates, insertion modes, he
 ## 5. Voice PiP and audio storage
 
 1. Select a physical microphone in **Voice → Recording**.
-2. Trigger the voice shortcut and verify the compact centered-top PiP surface appears without a title or unnecessary status text.
-3. Speak and verify the waveform responds. Stop with the same shortcut and verify the surface closes without a disabled-state flicker.
-4. Confirm the recording is a WebM/Opus file in the configured **Voice Notes** folder.
-5. Start a recording with a muted or silent microphone. Verify the PiP changes to a compact **No audio** warning while recording, the recording is discarded on stop, and no transcription job is created.
-6. Cancel a recording and verify no audio file or queue job remains.
+2. Use **Audio folder → Browse...** and verify a folder outside the workspace is rejected with a visible error and the previous value remains.
+3. Trigger the voice shortcut and verify the compact centered-top PiP surface appears without a title or unnecessary status text.
+4. Speak and verify the waveform responds. Stop with the same shortcut and verify the surface closes without a disabled-state flicker.
+5. Confirm the recording is a WebM/Opus file in the configured **Voice Notes** folder.
+6. Start a recording with a muted or silent microphone. Verify the PiP changes to a compact **No audio** warning while recording, the recording is discarded on stop, and no transcription job is created.
+7. Cancel a recording and verify no audio file or queue job remains.
 
 ## 6. Local transcription
 
 1. Enable local transcription and verify the Whisper status is clear before recording.
 2. Use **Install / repair Whisper** and confirm the engine/model files are validated or downloaded into `%LOCALAPPDATA%\Moment\whisper`.
-3. Record a spoken note and verify the selected destination:
+3. Use **Transcriptions folder → Browse...** and verify a folder outside the workspace is rejected with a visible error and the previous value remains.
+4. Record a spoken note and verify the selected destination:
    - **Text Note** writes to the recurring note.
    - **Separate transcription note** writes to the configured Transcriptions folder.
    - **Both** writes to both destinations.
-4. Verify the configured transcription filename format and prefix are applied.
-5. Disable or corrupt Whisper deliberately, record a voice note, and verify the audio remains in Voice Notes while Moment shows an actionable Windows notification. Retry only after Whisper is ready.
-6. Verify silent recordings are not sent to Whisper.
+5. Verify the configured transcription filename format and prefix are applied.
+6. Disable or corrupt Whisper deliberately, record a voice note, and verify the audio remains in Voice Notes while Moment shows an actionable Windows notification. Retry only after Whisper is ready.
+7. Verify silent recordings are not sent to Whisper.
 
 ## 7. Durable queue and restart behavior
 

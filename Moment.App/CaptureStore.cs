@@ -65,9 +65,7 @@ public sealed class CaptureStore
 
     private static string SafeRelativeFolder(string value, string fallback)
     {
-        var candidate = string.IsNullOrWhiteSpace(value) ? fallback : value.Trim().Trim('\\', '/');
-        if (Path.IsPathRooted(candidate) || candidate.Split(new[] { '/', '\\' }).Any(part => part == ".."))
-            throw new InvalidOperationException("Audio folder must be relative to the selected workspace.");
+        var candidate = global::Moment.WorkspacePath.ValidateFolder(string.IsNullOrWhiteSpace(value) ? fallback : value, "Audio folder");
         return candidate.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
     }
 

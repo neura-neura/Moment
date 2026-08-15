@@ -28,7 +28,9 @@ public sealed class RecurringNoteService
         var filename = MomentFormat.Format(local, filenameFormat);
         var prefix = settings.RecurringNoteFilenamePrefix?.Trim() ?? "";
         filename = WorkspacePath.SanitizeFilename(prefix + filename);
-        var relative = WorkspacePath.Combine(provider.Folder, filename.EndsWith(".md", StringComparison.OrdinalIgnoreCase) ? filename : $"{filename}.md");
+        var folder = string.IsNullOrWhiteSpace(settings.RecurringNoteFolder) ? provider.Folder : settings.RecurringNoteFolder;
+        folder = WorkspacePath.ValidateFolder(folder, "Text notes folder");
+        var relative = WorkspacePath.Combine(folder, filename.EndsWith(".md", StringComparison.OrdinalIgnoreCase) ? filename : $"{filename}.md");
         var absolute = WorkspacePath.Resolve(settings.WorkspacePath, relative);
         Directory.CreateDirectory(Path.GetDirectoryName(absolute)!);
         var gate = FileLocks.GetOrAdd(absolute, _ => new object());
@@ -144,6 +146,14 @@ internal static class WorkspacePath
         if (normalized is "" or ".") return "";
         if (Path.IsPathRooted(normalized) || normalized.Split('/').Any(p => p is "" or "..")) throw new InvalidOperationException("Workspace folders must remain relative to the selected workspace.");
         return normalized;
+    }
+
+    public static string ValidateFolder(string value, string label)
+    {
+        var normalized = (value ?? "").Trim().Trim('/', '\\').Replace('\\', '/');
+        if (normalized is not ("" or ".") && (Path.IsPathRooted(normalized) || normalized.Split('/').Any(p => p is "" or "..")))
+            throw new InvalidOperationException($"{label} must be inside the selected workspace.");
+        return normalized is "" or "." ? "" : normalized;
     }
 
     public static string SanitizeFilename(string value)

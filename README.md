@@ -8,6 +8,7 @@ Moment is a native Windows capture app for quick text and voice notes. It runs i
 
 - Captures text and voice globally, including F13-F24 and Stream Deck keys.
 - Creates one recurring note for each calendar day and appends timestamped entries safely.
+- Lets you choose the Text Notes, Voice Notes, and Transcriptions folders inside the selected workspace; outside paths are rejected.
 - Records compact WebM/Opus audio and optionally transcribes it locally with Whisper.
 - Routes voice output to the recurring note, a separate transcript note, or both.
 - Runs from the Windows notification tray and can start with Windows.

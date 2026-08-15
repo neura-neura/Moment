@@ -24,16 +24,20 @@ try
 
     var recurringNotePath = new RecurringNoteService(settings).WriteCapture("Smoke text", new DateTimeOffset(2026, 8, 13, 10, 30, 0, TimeSpan.Zero));
     var recurringText = await File.ReadAllTextAsync(Path.Combine(root, recurringNotePath.Replace('/', Path.DirectorySeparatorChar)));
-    Assert(recurringText.Contains("# Inbox", StringComparison.Ordinal) && recurringText.Contains("Smoke text", StringComparison.Ordinal), "recurring-note insertion");
+    Assert(recurringNotePath.StartsWith("Recurring/", StringComparison.Ordinal) && recurringText.Contains("# Inbox", StringComparison.Ordinal) && recurringText.Contains("Smoke text", StringComparison.Ordinal), "metadata recurring-note folder and insertion");
 
+    settings.RecurringNoteFolder = "Text Notes";
     settings.RecurringNoteFilenameFormat = "DD MMMM YYYY";
     settings.RecurringNoteFilenamePrefix = "Journal-";
     var customTimestamp = new DateTimeOffset(2026, 8, 14, 10, 31, 0, TimeSpan.Zero);
     var customPath = new RecurringNoteService(settings).WriteCapture("Custom filename", customTimestamp);
     var expectedStem = WorkspacePath.SanitizeFilename($"Journal-{MomentFormat.Format(customTimestamp.ToLocalTime(), "DD MMMM YYYY")}");
-    Assert(customPath.EndsWith($"{expectedStem}.md", StringComparison.Ordinal), "custom localized filename and prefix");
+    Assert(customPath.StartsWith("Text Notes/", StringComparison.Ordinal) && customPath.EndsWith($"{expectedStem}.md", StringComparison.Ordinal), "custom text-note folder, localized filename, and prefix");
     var duplicatePath = new RecurringNoteService(settings).WriteCapture("Same filename appends", customTimestamp.AddMinutes(1));
     Assert(string.Equals(customPath, duplicatePath, StringComparison.Ordinal), "duplicate filename reuses existing note");
+    AssertThrows(() => WorkspacePath.ValidateFolder("../outside", "Text notes folder"), "workspace-relative text folder validation");
+    AssertThrows(() => WorkspacePath.ValidateFolder("D:/outside", "Audio folder"), "workspace-relative audio folder validation");
+    AssertThrows(() => WorkspacePath.ValidateFolder("C:/outside", "Transcriptions folder"), "workspace-relative transcription folder validation");
 
     settings.VoiceFilenameFormat = "DD MMMM YYYY HH-mm";
     settings.VoiceFilenamePrefix = "Voice-";
@@ -69,6 +73,23 @@ finally
 static void Assert(bool condition, string name)
 {
     if (!condition) throw new InvalidOperationException($"Smoke assertion failed: {name}");
+}
+
+static void AssertThrows(Action action, string name)
+{
+    try
+    {
+        action();
+        throw new InvalidOperationException($"Smoke assertion failed: {name}");
+    }
+    catch (InvalidOperationException error) when (error.Message.StartsWith("Smoke assertion failed:", StringComparison.Ordinal))
+    {
+        throw;
+    }
+    catch (InvalidOperationException)
+    {
+        // Expected validation failure.
+    }
 }
 
 static async Task DownloadMoveSmokeAsync(string root)

@@ -71,7 +71,10 @@ if (-not (Test-Path -LiteralPath $installer)) {
     throw "NSIS completed without creating the installer: $installer"
 }
 
-$hash = (Get-FileHash -LiteralPath $installer -Algorithm SHA256).Hash
+$sha256 = [System.Security.Cryptography.SHA256]::Create()
+$stream = [System.IO.File]::OpenRead($installer)
+try { $hash = ([System.BitConverter]::ToString($sha256.ComputeHash($stream))).Replace('-', '') }
+finally { $stream.Dispose(); $sha256.Dispose() }
 Write-Host "Real Windows installer created: $installer"
 Write-Host "SHA256: $hash"
 Write-Host "Installer technology: NSIS (not a 7-Zip self-extracting archive)."

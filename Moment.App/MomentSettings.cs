@@ -16,6 +16,7 @@ public sealed class MomentSettings
     public string RecurringNoteTimestampFormat { get; set; } = "HH:mm";
     public string RecurringNoteFilenameFormat { get; set; } = "YYYY-MM-DD";
     public string RecurringNoteFilenamePrefix { get; set; } = "";
+    public string RecurringNoteFolder { get; set; } = "";
     public bool IncludeTimestamp { get; set; } = true;
     public bool RecurringNoteCloseAfterSave { get; set; } = true;
     public bool RecurringNoteEnterToSave { get; set; } = true;
