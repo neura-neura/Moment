@@ -519,7 +519,6 @@ public sealed class VoicePiP : Window
             Visibility = Visibility.Collapsed,
             Children =
             {
-                new SymbolIcon { Symbol = Symbol.Microphone, Foreground = NativeRecordingBrush(), Width = 16, Height = 16 },
                 new TextBlock { Text = "No audio", Foreground = NativeRecordingBrush(), FontSize = 12, VerticalAlignment = VerticalAlignment.Center }
             }
         };

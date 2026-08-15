@@ -61,7 +61,7 @@ Automated checks cover Daily Note transforms, provider settings, templates, inse
 4. Use the Audio folder and Separate note folder **Browse...** buttons. Verify the selected paths are stored relative to the selected vault and default to `Voice Notes` and `Voice Transcriptions`.
 5. Choose destination **Text Note**, **Separate transcription note**, and **Both**. Verify Separate note folder is hidden only for Text Note.
 6. Hover the Fluent `Info` help markers and verify each tooltip uses the native system-colored rounded tooltip and explains the associated setting.
-7. In **Settings → Text Note filename**, verify the default format is `YYYY-MM-DD`. Try `DD MMMM YYYY` and a prefix such as `Journal-`; verify month names follow the Windows regional language. Capture twice with the same generated name and verify both entries reuse the same Markdown file rather than overwriting or creating an accidental duplicate.
+7. In **Text Note → Text Note filename**, verify the default format is `YYYY-MM-DD`. Try `DD MMMM YYYY` and a prefix such as `Journal-`; verify month names follow the Windows regional language. Capture twice with the same generated name and verify both entries reuse the same Markdown file rather than overwriting or creating an accidental duplicate.
 
 ## Local Whisper
 

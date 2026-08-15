@@ -31,12 +31,12 @@ The local x64 installer was regenerated at:
 
 `quick-capture-bridge-winui/dist/MomentSetup-x64.exe`
 
-SHA-256: `EF3672ADCF26727D5E0316C2C4AD9B2BD25455A8AD450DAF50033FF1DE541090`
-Size: 144,325,509 bytes
+SHA-256: `1787759E87A0D318EE3E6E12D484089DE4A1F5AC80A7F784E87EBE5637E5EA85`
+Size: 144,340,430 bytes
 
 It is a real NSIS setup executable with selectable Start menu/Desktop shortcuts, a per-user install directory, Add/Remove Programs registration, and uninstaller. Its Finish-page launch passes `--foreground` so Moment opens visibly instead of staying in the tray. It is not an MSIX package and does not require a development certificate. A silent disposable install created the app executable and uninstaller; the uninstaller then removed the target successfully. `dist` contains only the installer.
 
-The Settings UI now exposes Moment branding, an input-device selector, conditional Target heading and Missing heading fields, a shared timestamp toggle, vault-relative folder pickers, a native Fluent `Info` tooltip icon, a GitHub update button, and the `Made by neura-neura` repository link.
+The Settings UI now exposes Moment branding, an input-device selector, conditional Target heading and Missing heading fields, a shared timestamp toggle, vault-relative folder pickers, a native Fluent `Info` tooltip icon, a GitHub update button, and the `Made by neura-neura` repository link. Text Note filename format and prefix controls are grouped with the Text Note capture settings.
 
 ## Whisper validation
 

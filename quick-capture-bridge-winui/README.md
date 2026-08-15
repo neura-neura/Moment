@@ -4,7 +4,7 @@
 
 Moment is the native Windows application for frictionless Obsidian capture. It is built with WinUI 3 and Windows App SDK, so its settings window and both always-on-top picture-in-picture (PiP) capture panels use the same native UI stack. Moment runs independently; Quick Daily Capture and Quick Voice Notes are optional legacy integrations.
 
-It is made to work alongside Obsidian, while remaining useful with Obsidian closed or without the capture plugins. The public source and releases are published at [github.com/neura-neura/Moment](https://github.com/neura-neura/Moment). The current Windows release is [Moment 1.2.6](https://github.com/neura-neura/Moment/releases/tag/v1.2.6).
+It is made to work alongside Obsidian, while remaining useful with Obsidian closed or without the capture plugins. The public source and releases are published at [github.com/neura-neura/Moment](https://github.com/neura-neura/Moment). The current Windows release is [Moment 1.2.7](https://github.com/neura-neura/Moment/releases/tag/v1.2.7).
 
 The settings window uses a native WinUI NavigationView: Text Note, Voice, and Shortcuts are in the left menu, while startup and tray behavior live under the footer Settings section. The Save settings action remains available in the native footer across sections.
 
@@ -28,7 +28,7 @@ Moment remains useful while Obsidian is closed or another application, including
 
 ## Windows installer (EXE)
 
-Download the current Windows installer from the public [Moment v1.2.6 release](https://github.com/neura-neura/Moment/releases/tag/v1.2.6). Choose `MomentSetup-x64.exe` from the release assets.
+Download the current Windows installer from the public [Moment v1.2.7 release](https://github.com/neura-neura/Moment/releases/tag/v1.2.7). Choose `MomentSetup-x64.exe` from the release assets.
 
 For local development, build the native Windows installer:
 
