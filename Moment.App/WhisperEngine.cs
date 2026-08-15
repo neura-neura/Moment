@@ -222,7 +222,7 @@ public sealed class NativeWhisperEngine
     private static HttpClient CreateHttpClient() => new(new HttpClientHandler { AllowAutoRedirect = true })
     {
         Timeout = Timeout.InfiniteTimeSpan,
-        DefaultRequestHeaders = { { "User-Agent", "Moment/1.3.1" } }
+        DefaultRequestHeaders = { { "User-Agent", "Moment/1.4.0" } }
     };
 
     private static void TryDelete(string path) { try { if (File.Exists(path)) File.Delete(path); } catch { } }

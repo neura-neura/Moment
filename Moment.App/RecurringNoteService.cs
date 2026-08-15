@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Moment;
@@ -20,18 +19,15 @@ public sealed class RecurringNoteService
         if (string.IsNullOrWhiteSpace(settings.WorkspacePath) || !Directory.Exists(settings.WorkspacePath))
             throw new InvalidOperationException("Choose an existing workspace folder before writing a recurring note.");
 
-        var provider = RecurringNoteProviderSettings.Load(settings.WorkspacePath);
         var local = timestamp.ToLocalTime();
         var filenameFormat = string.IsNullOrWhiteSpace(settings.RecurringNoteFilenameFormat)
-            ? (string.IsNullOrWhiteSpace(provider.Format) ? "YYYY-MM-DD" : provider.Format)
+            ? "YYYY-MM-DD"
             : settings.RecurringNoteFilenameFormat.Trim();
         var filename = MomentFormat.Format(local, filenameFormat);
         var prefix = settings.RecurringNoteFilenamePrefix?.Trim() ?? "";
         filename = WorkspacePath.SanitizeFilename(prefix + filename);
-        var folder = string.IsNullOrWhiteSpace(settings.RecurringNoteFolder) ? provider.Folder : settings.RecurringNoteFolder;
-        folder = WorkspacePath.ValidateFolder(folder, "Text notes folder");
-        var relative = WorkspacePath.Combine(folder, filename.EndsWith(".md", StringComparison.OrdinalIgnoreCase) ? filename : $"{filename}.md");
-        var absolute = WorkspacePath.Resolve(settings.WorkspacePath, relative);
+        var folder = WorkspacePath.ResolveConfiguredFolder(settings.WorkspacePath, settings.RecurringNoteFolder, "");
+        var absolute = Path.Combine(folder, filename.EndsWith(".md", StringComparison.OrdinalIgnoreCase) ? filename : $"{filename}.md");
         Directory.CreateDirectory(Path.GetDirectoryName(absolute)!);
         var gate = FileLocks.GetOrAdd(absolute, _ => new object());
         lock (gate)
@@ -40,17 +36,15 @@ public sealed class RecurringNoteService
             // reuse the existing file and append the new capture rather than
             // overwriting it or silently creating a duplicate.
             if (!File.Exists(absolute))
-                WriteAtomic(absolute, TemplateRenderer.Load(settings.WorkspacePath, provider.Template, filename, local, provider.Format));
+                WriteAtomic(absolute, "");
             var current = File.ReadAllText(absolute, Encoding.UTF8);
             var heading = settings.IncludeTimestamp
                 ? MomentFormat.Format(local, string.IsNullOrWhiteSpace(settings.RecurringNoteTimestampFormat) ? "HH:mm" : settings.RecurringNoteTimestampFormat)
                 : "";
             WriteAtomic(absolute, NativeCaptureInsertion.Insert(current, heading, clean, settings));
         }
-        return relative.Replace(Path.DirectorySeparatorChar, '/');
+        return WorkspacePath.DisplayPath(settings.WorkspacePath, absolute);
     }
-
-    public RecurringNoteProviderSettings ReadProviderSettings() => RecurringNoteProviderSettings.Load(settings.WorkspacePath);
 
     private static void WriteAtomic(string path, string content)
     {
@@ -69,91 +63,31 @@ public sealed class RecurringNoteService
     }
 }
 
-public sealed record RecurringNoteProviderSettings(string Folder, string Format, string Template)
-{
-    public static RecurringNoteProviderSettings Load(string workspace)
-    {
-        var periodic = Path.Combine(workspace, ".obsidian", "plugins", "periodic-notes", "data.json");
-        if (Read(periodic, out var periodicDoc) && GetObject(periodicDoc, "daily", out var recurringProvider) && GetBool(recurringProvider, "enabled", out var enabled) && enabled)
-            return From(recurringProvider);
-        var core = Path.Combine(workspace, ".obsidian", "daily-notes.json");
-        if (Read(core, out var coreDoc)) return From(coreDoc);
-        return new RecurringNoteProviderSettings("", "YYYY-MM-DD", "");
-    }
-
-    private static RecurringNoteProviderSettings From(JsonElement value)
-    {
-        var format = GetString(value, "format");
-        return new RecurringNoteProviderSettings(GetString(value, "folder"), string.IsNullOrWhiteSpace(format) ? "YYYY-MM-DD" : format, GetString(value, "template"));
-    }
-
-    private static bool Read(string path, out JsonElement value)
-    {
-        value = default;
-        if (!File.Exists(path)) return false;
-        try { using var doc = JsonDocument.Parse(File.ReadAllText(path)); value = doc.RootElement.Clone(); return value.ValueKind == JsonValueKind.Object; }
-        catch { return false; }
-    }
-
-    private static string GetString(JsonElement value, string name)
-    {
-        foreach (var p in value.EnumerateObject())
-            if (string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase) && p.Value.ValueKind == JsonValueKind.String)
-                return p.Value.GetString()?.Trim() ?? "";
-        return "";
-    }
-
-    private static bool GetBool(JsonElement value, string name, out bool result)
-    {
-        result = false;
-        foreach (var p in value.EnumerateObject())
-            if (string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase) && (p.Value.ValueKind is JsonValueKind.True or JsonValueKind.False))
-            { result = p.Value.GetBoolean(); return true; }
-        return false;
-    }
-
-    private static bool GetObject(JsonElement value, string name, out JsonElement result)
-    {
-        foreach (var p in value.EnumerateObject())
-            if (string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase) && p.Value.ValueKind == JsonValueKind.Object)
-            { result = p.Value; return true; }
-        result = default;
-        return false;
-    }
-}
-
 internal static class WorkspacePath
 {
-    public static string Combine(string folder, string name)
-    {
-        var safeFolder = Sanitize(folder);
-        var safeName = name.Replace('\\', '/').Trim('/');
-        if (safeName.Length == 0 || safeName.Split('/').Any(p => p is "" or "..")) throw new InvalidOperationException("The recurring note name is invalid.");
-        return safeFolder.Length == 0 ? safeName : $"{safeFolder}/{safeName}";
-    }
-
     public static string Resolve(string root, string relative)
     {
-        var basePath = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
-        var full = Path.GetFullPath(Path.Combine(basePath, relative.Replace('/', Path.DirectorySeparatorChar)));
-        if (!full.StartsWith(basePath, StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("The path escapes the selected workspace.");
-        return full;
+        var configured = (relative ?? "").Trim();
+        if (configured.Length == 0) return Path.GetFullPath(root);
+        return Path.IsPathRooted(configured)
+            ? Path.GetFullPath(configured)
+            : Path.GetFullPath(Path.Combine(root, configured.Replace('/', Path.DirectorySeparatorChar)));
     }
 
-    public static string Sanitize(string value)
+    public static string ResolveConfiguredFolder(string root, string configured, string fallback)
     {
-        var normalized = (value ?? "").Trim().Trim('/', '\\').Replace('\\', '/');
-        if (normalized is "" or ".") return "";
-        if (Path.IsPathRooted(normalized) || normalized.Split('/').Any(p => p is "" or "..")) throw new InvalidOperationException("Workspace folders must remain relative to the selected workspace.");
-        return normalized;
+        var value = string.IsNullOrWhiteSpace(configured) ? fallback : configured.Trim();
+        return Resolve(root, value);
     }
 
-    public static string ValidateFolder(string value, string label)
+    public static string DisplayPath(string root, string absolutePath)
     {
-        var normalized = (value ?? "").Trim().Trim('/', '\\').Replace('\\', '/');
-        if (normalized is not ("" or ".") && (Path.IsPathRooted(normalized) || normalized.Split('/').Any(p => p is "" or "..")))
-            throw new InvalidOperationException($"{label} must be inside the selected workspace.");
-        return normalized is "" or "." ? "" : normalized;
+        var fullRoot = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var fullPath = Path.GetFullPath(absolutePath);
+        var relative = Path.GetRelativePath(fullRoot, fullPath);
+        return relative == "." || (!relative.StartsWith("..", StringComparison.Ordinal) && !Path.IsPathRooted(relative))
+            ? relative.Replace(Path.DirectorySeparatorChar, '/')
+            : fullPath;
     }
 
     public static string SanitizeFilename(string value)
@@ -174,44 +108,6 @@ internal static class MomentFilename
         var pattern = string.IsNullOrWhiteSpace(format) ? DefaultFormat : format.Trim();
         var stem = MomentFormat.Format(timestamp.ToLocalTime(), pattern);
         return WorkspacePath.SanitizeFilename($"{prefix?.Trim() ?? ""}{stem}");
-    }
-}
-
-internal static class TemplateRenderer
-{
-    private static readonly Regex Token = new(@"{{\s*(?<name>date|time|title|yesterday|tomorrow)\s*(?<offset>[+-]\d+)?(?<unit>[yqmwdhs])?\s*(?::\s*(?<format>[^}]+))?\s*}}", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-    public static string Load(string workspace, string templatePath, string filename, DateTimeOffset capture, string providerFormat)
-    {
-        if (string.IsNullOrWhiteSpace(templatePath) || templatePath.Trim() == "/") return "";
-        try
-        {
-            var path = WorkspacePath.Resolve(workspace, templatePath.Trim());
-            if (!File.Exists(path)) return "";
-            return Token.Replace(File.ReadAllText(path, Encoding.UTF8), m => Render(m, filename, capture, providerFormat));
-        }
-        catch { return ""; }
-    }
-
-    private static string Render(Match match, string filename, DateTimeOffset capture, string providerFormat)
-    {
-        var name = match.Groups["name"].Value.ToLowerInvariant();
-        if (name == "title") return filename;
-        var value = capture;
-        if (name == "yesterday") value = value.AddDays(-1);
-        if (name == "tomorrow") value = value.AddDays(1);
-        var offset = match.Groups["offset"].Value;
-        if (offset.Length > 0 && int.TryParse(offset, out var amount))
-        {
-            value = match.Groups["unit"].Value.ToLowerInvariant() switch
-            {
-                "y" => value.AddYears(amount), "q" => value.AddMonths(amount * 3), "m" => value.AddMonths(amount),
-                "w" => value.AddDays(amount * 7), "d" => value.AddDays(amount), "h" => value.AddHours(amount),
-                "s" => value.AddSeconds(amount), _ => value
-            };
-        }
-        var format = match.Groups["format"].Value.Trim();
-        return name == "time" ? MomentFormat.Format(DateTimeOffset.Now, format.Length == 0 ? "HH:mm" : format) : MomentFormat.Format(value, format.Length == 0 ? providerFormat : format);
     }
 }
 

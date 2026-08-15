@@ -147,7 +147,7 @@ public sealed class NativeVoiceProcessor : IDisposable
                 transcript = await whisper.TranscribeAsync(audioPath, current, token);
             }
 
-            var body = BuildVoiceNoteBody(transcript, job.AudioPath, current);
+            var body = BuildVoiceNoteBody(transcript, audioPath, current);
             var destination = current.TranscriptionDestination?.Trim().ToLowerInvariant() switch
             {
                 "recurring-note" => VoiceDestination.RecurringNote,
@@ -187,30 +187,32 @@ public sealed class NativeVoiceProcessor : IDisposable
         }
     }
 
-    private static string BuildVoiceNoteBody(string transcript, string audioRelativePath, MomentSettings current)
+    private static string BuildVoiceNoteBody(string transcript, string audioPath, MomentSettings current)
     {
         var cleanTranscript = transcript.Trim();
         var parts = new List<string>();
         if (cleanTranscript.Length > 0) parts.Add(cleanTranscript);
-        if (current.IncludeAudioEmbed) parts.Add($"![[{audioRelativePath.Replace('\\', '/') }]]");
+        if (current.IncludeAudioEmbed)
+        {
+            var audioReference = WorkspacePath.DisplayPath(current.WorkspacePath, audioPath).Replace('\\', '/');
+            parts.Add($"![[{audioReference}]]");
+        }
         if (parts.Count == 0) parts.Add("Voice note");
         return string.Join("\n\n", parts);
     }
 
     private static string WriteSeparateNote(string body, DateTimeOffset startedAt, MomentSettings current)
     {
-        var folder = WorkspacePath.ValidateFolder(string.IsNullOrWhiteSpace(current.TranscriptionFolder) ? "Voice Transcriptions" : current.TranscriptionFolder, "Transcriptions folder");
+        var folder = WorkspacePath.ResolveConfiguredFolder(current.WorkspacePath, current.TranscriptionFolder, "Voice Transcriptions");
         var stem = MomentFilename.Format(startedAt, current.TranscriptionFilenameFormat, current.TranscriptionFilenamePrefix);
-        var relative = WorkspacePath.Combine(folder, $"{stem}.md");
-        var path = WorkspacePath.Resolve(current.WorkspacePath, relative);
+        var path = Path.Combine(folder, $"{stem}.md");
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         for (var suffix = 1; File.Exists(path); suffix++)
         {
-            relative = WorkspacePath.Combine(folder, $"{stem}-{suffix}.md");
-            path = WorkspacePath.Resolve(current.WorkspacePath, relative);
+            path = Path.Combine(folder, $"{stem}-{suffix}.md");
         }
         WriteAtomic(path, body.EndsWith('\n') ? body : body + "\n");
-        return relative;
+        return WorkspacePath.DisplayPath(current.WorkspacePath, path);
     }
 
     private static string DescribeProcessingFailure(string error, string audioPath)

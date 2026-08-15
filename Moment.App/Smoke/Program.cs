@@ -6,14 +6,11 @@ using System.Text;
 using Moment;
 
 var root = Path.Combine(Path.GetTempPath(), $"moment-smoke-{Guid.NewGuid():N}");
+var external = Path.Combine(Path.GetTempPath(), $"moment-external-{Guid.NewGuid():N}");
 Directory.CreateDirectory(root);
+Directory.CreateDirectory(external);
 try
 {
-    Directory.CreateDirectory(Path.Combine(root, ".obsidian"));
-    await File.WriteAllTextAsync(Path.Combine(root, ".obsidian", "daily-notes.json"), "{\"folder\":\"Recurring\",\"format\":\"YYYY-MM-DD\",\"template\":\"Templates/recurring.md\"}");
-    Directory.CreateDirectory(Path.Combine(root, "Templates"));
-    await File.WriteAllTextAsync(Path.Combine(root, "Templates", "recurring.md"), "# Recurring note\n\n{{date}}\n");
-
     var settings = new MomentSettings
     {
         WorkspacePath = root,
@@ -24,7 +21,7 @@ try
 
     var recurringNotePath = new RecurringNoteService(settings).WriteCapture("Smoke text", new DateTimeOffset(2026, 8, 13, 10, 30, 0, TimeSpan.Zero));
     var recurringText = await File.ReadAllTextAsync(Path.Combine(root, recurringNotePath.Replace('/', Path.DirectorySeparatorChar)));
-    Assert(recurringNotePath.StartsWith("Recurring/", StringComparison.Ordinal) && recurringText.Contains("# Inbox", StringComparison.Ordinal) && recurringText.Contains("Smoke text", StringComparison.Ordinal), "metadata recurring-note folder and insertion");
+    Assert(recurringNotePath == "2026-08-13.md" && recurringText.Contains("# Inbox", StringComparison.Ordinal) && recurringText.Contains("Smoke text", StringComparison.Ordinal), "built-in recurring-note defaults and insertion");
 
     settings.RecurringNoteFolder = "Text Notes";
     settings.RecurringNoteFilenameFormat = "DD MMMM YYYY";
@@ -35,14 +32,17 @@ try
     Assert(customPath.StartsWith("Text Notes/", StringComparison.Ordinal) && customPath.EndsWith($"{expectedStem}.md", StringComparison.Ordinal), "custom text-note folder, localized filename, and prefix");
     var duplicatePath = new RecurringNoteService(settings).WriteCapture("Same filename appends", customTimestamp.AddMinutes(1));
     Assert(string.Equals(customPath, duplicatePath, StringComparison.Ordinal), "duplicate filename reuses existing note");
-    AssertThrows(() => WorkspacePath.ValidateFolder("../outside", "Text notes folder"), "workspace-relative text folder validation");
-    AssertThrows(() => WorkspacePath.ValidateFolder("D:/outside", "Audio folder"), "workspace-relative audio folder validation");
-    AssertThrows(() => WorkspacePath.ValidateFolder("C:/outside", "Transcriptions folder"), "workspace-relative transcription folder validation");
+
+    settings.RecurringNoteFolder = Path.Combine(external, "Text Notes");
+    var externalNotePath = new RecurringNoteService(settings).WriteCapture("External text note", customTimestamp.AddDays(1));
+    Assert(externalNotePath.StartsWith(Path.Combine(external, "Text Notes"), StringComparison.OrdinalIgnoreCase) && File.Exists(externalNotePath), "external text-note folder");
 
     settings.VoiceFilenameFormat = "DD MMMM YYYY HH-mm";
     settings.VoiceFilenamePrefix = "Voice-";
     settings.TranscriptionFilenameFormat = "DD MMMM YYYY";
     settings.TranscriptionFilenamePrefix = "Transcript-";
+    settings.AudioFolder = Path.Combine(external, "Voice Notes");
+    settings.TranscriptionFolder = Path.Combine(external, "Voice Transcriptions");
     var voiceTimestamp = new DateTimeOffset(2026, 8, 15, 11, 32, 0, TimeSpan.Zero);
     var audioPath = new CaptureStore(settings).EnsureAudioPath(voiceTimestamp);
     var expectedAudioStem = WorkspacePath.SanitizeFilename($"Voice-{MomentFormat.Format(voiceTimestamp.ToLocalTime(), "DD MMMM YYYY HH-mm")}");
@@ -56,10 +56,10 @@ try
         var deadline = DateTime.UtcNow.AddSeconds(10);
         while (DateTime.UtcNow < deadline && !(Directory.Exists(completed) && Directory.EnumerateFiles(completed, "*.json").Any())) await Task.Delay(100);
     }
-    Assert(Directory.Exists(Path.Combine(root, "Voice Transcriptions")), "native voice output folder");
-    Assert(Directory.EnumerateFiles(Path.Combine(root, "Voice Transcriptions"), "*.md").Any(), "native voice Markdown output");
+    Assert(Directory.Exists(settings.TranscriptionFolder), "native voice output folder");
+    Assert(Directory.EnumerateFiles(settings.TranscriptionFolder, "*.md").Any(), "native voice Markdown output");
     var expectedTranscriptStem = WorkspacePath.SanitizeFilename($"Transcript-{MomentFormat.Format(voiceTimestamp.ToLocalTime(), "DD MMMM YYYY")}");
-    Assert(File.Exists(Path.Combine(root, "Voice Transcriptions", $"{expectedTranscriptStem}.md")), "custom transcription filename and prefix");
+    Assert(File.Exists(Path.Combine(settings.TranscriptionFolder, $"{expectedTranscriptStem}.md")), "custom transcription filename and prefix");
     Assert(Directory.EnumerateFiles(CaptureQueuePaths.Completed(root), "voice-*.json").Any(), "completed voice queue item");
     Assert(!Directory.Exists(Path.Combine(root, ".quick-capture")), "legacy queue is not created");
     await DownloadMoveSmokeAsync(root);
@@ -68,28 +68,12 @@ try
 finally
 {
     try { Directory.Delete(root, true); } catch { }
+    try { Directory.Delete(external, true); } catch { }
 }
 
 static void Assert(bool condition, string name)
 {
     if (!condition) throw new InvalidOperationException($"Smoke assertion failed: {name}");
-}
-
-static void AssertThrows(Action action, string name)
-{
-    try
-    {
-        action();
-        throw new InvalidOperationException($"Smoke assertion failed: {name}");
-    }
-    catch (InvalidOperationException error) when (error.Message.StartsWith("Smoke assertion failed:", StringComparison.Ordinal))
-    {
-        throw;
-    }
-    catch (InvalidOperationException)
-    {
-        // Expected validation failure.
-    }
 }
 
 static async Task DownloadMoveSmokeAsync(string root)

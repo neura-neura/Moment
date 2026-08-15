@@ -1,12 +1,12 @@
 # Moment manual test plan
 
-Automated checks cover recurring-note transforms, templates, insertion modes, headings, localized filenames, timestamps, workspace-safe paths, WebM routing, durable voice jobs, the native Release build, and verified Whisper downloads. The checks below require a real Windows microphone, physical F13-F24 or Stream Deck input, WinUI rendering, Windows tray behavior, or human visual inspection. **This plan has been updated for the standalone Moment app and has not been executed.**
+Automated checks cover recurring-note transforms, insertion modes, headings, localized filenames, timestamps, configurable output folders, WebM routing, durable voice jobs, the native Release build, and verified Whisper downloads. The checks below require a real Windows microphone, physical F13-F24 or Stream Deck input, WinUI rendering, Windows tray behavior, or human visual inspection. **This plan has been updated for the standalone Moment app and has not been executed.**
 
 ## 1. Test workspace
 
 1. Create or back up a disposable workspace whose path contains spaces.
-2. Add a Markdown template and configure a recurring-note folder, filename format, and template in Moment.
-3. Optionally add `.obsidian/daily-notes.json` or `.obsidian/plugins/periodic-notes/data.json` to verify read-only workspace compatibility. Moment must be the only capture process.
+2. Configure the recurring-note folder, filename format, and insertion behavior in Moment.
+3. Moment must be the only capture process.
 4. Confirm the workspace contains no `.moment` folder before the first capture.
 
 ## 2. First launch, tray, and installer
@@ -23,8 +23,8 @@ Automated checks cover recurring-note transforms, templates, insertion modes, he
 
 1. Choose the disposable workspace and save settings.
 2. Verify the UI says **Selected workspace** and the button says **Choose workspace...**.
-3. Choose a **Text notes folder** with **Browse...** and verify it is displayed relative to the workspace.
-4. Attempt to choose a folder outside the workspace. Verify the field is unchanged and a visible folder-selection error explains that the folder must be inside the selected workspace.
+3. Choose a **Text notes folder** with **Browse...** and verify the selected absolute path is displayed.
+4. Choose a folder outside the workspace and save. Verify the external folder is accepted and used for the next Text Note.
 5. Configure a filename format with localized month text and a prefix such as `Journal-`.
 6. Verify **Recurring note** explains that one new note is created for each calendar day.
 7. Test **End of recurring note**, **Beginning of recurring note**, and **Under a heading**.
@@ -32,7 +32,6 @@ Automated checks cover recurring-note transforms, templates, insertion modes, he
 9. Test all missing-heading behaviors: create the heading, append at the end, and show an error.
 10. Toggle the timestamp option off and confirm a text capture contains no timestamp heading. Toggle it on and confirm the configured format is used.
 11. Capture twice with the same filename. Verify the existing recurring note is reused and the second entry is appended without overwriting the first.
-12. If optional workspace metadata is present, verify Moment reads the folder, filename format, and template. Remove or rename those files and verify capture still works with Moment's built-in defaults.
 
 ## 4. Global shortcuts and text PiP
 
@@ -46,10 +45,10 @@ Automated checks cover recurring-note transforms, templates, insertion modes, he
 ## 5. Voice PiP and audio storage
 
 1. Select a physical microphone in **Voice → Recording**.
-2. Use **Audio folder → Browse...** and verify a folder outside the workspace is rejected with a visible error and the previous value remains.
+2. Use **Audio folder → Browse...** to choose a folder inside or outside the workspace, save settings, and verify the next WebM recording is written there.
 3. Trigger the voice shortcut and verify the compact centered-top PiP surface appears without a title or unnecessary status text.
 4. Speak and verify the waveform responds. Stop with the same shortcut and verify the surface closes without a disabled-state flicker.
-5. Confirm the recording is a WebM/Opus file in the configured **Voice Notes** folder.
+5. Confirm the recording is a WebM/Opus file in the configured **Audio folder**.
 6. Start a recording with a muted or silent microphone. Verify the PiP changes to a compact **No audio** warning while recording, the recording is discarded on stop, and no transcription job is created.
 7. Cancel a recording and verify no audio file or queue job remains.
 
@@ -57,7 +56,7 @@ Automated checks cover recurring-note transforms, templates, insertion modes, he
 
 1. Enable local transcription and verify the Whisper status is clear before recording.
 2. Use **Install / repair Whisper** and confirm the engine/model files are validated or downloaded into `%LOCALAPPDATA%\Moment\whisper`.
-3. Use **Transcriptions folder → Browse...** and verify a folder outside the workspace is rejected with a visible error and the previous value remains.
+3. Use **Transcriptions folder → Browse...** to choose a folder inside or outside the workspace, save settings, and verify the selected destination is used.
 4. Record a spoken note and verify the selected destination:
    - **Text Note** writes to the recurring note.
    - **Separate transcription note** writes to the configured Transcriptions folder.
@@ -79,7 +78,7 @@ Automated checks cover recurring-note transforms, templates, insertion modes, he
 
 1. Open the generated recurring note and transcript in any compatible Markdown editor and verify formatting, headings, timestamps, and audio references.
 2. Confirm Moment does not need the editor to be running during capture.
-3. Verify all output remains in the selected workspace and that switching to a second workspace routes subsequent captures only there.
+3. Verify each configured output folder receives its own output, including folders outside the selected workspace, and that switching to a second workspace routes subsequent queue state only there.
 
 ## Completion criteria
 

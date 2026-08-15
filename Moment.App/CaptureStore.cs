@@ -20,8 +20,7 @@ public sealed class CaptureStore
     public string EnsureAudioPath(DateTimeOffset startedAt)
     {
         EnsureConfigured();
-        var folder = SafeRelativeFolder(settings.AudioFolder, "Voice Notes");
-        var directory = Path.Combine(settings.WorkspacePath, folder);
+        var directory = global::Moment.WorkspacePath.ResolveConfiguredFolder(settings.WorkspacePath, settings.AudioFolder, "Voice Notes");
         Directory.CreateDirectory(directory);
         var stem = MomentFilename.Format(startedAt, settings.VoiceFilenameFormat, settings.VoiceFilenamePrefix);
         var path = Path.Combine(directory, stem + ".webm");
@@ -38,17 +37,16 @@ public sealed class CaptureStore
     public string WriteVoice(string audioPath, DateTimeOffset startedAt)
     {
         EnsureConfigured();
-        var relative = Path.GetRelativePath(settings.WorkspacePath, audioPath).Replace(Path.DirectorySeparatorChar, '/');
         var job = new VoiceJob
         {
-            AudioPath = relative,
+            AudioPath = Path.GetFullPath(audioPath),
             StartedAt = startedAt.ToString("O"),
             CreatedAt = DateTimeOffset.Now.ToString("O")
         };
         var directory = EnsurePending();
         var path = Path.Combine(directory, $"voice-{job.Id}.json");
         WriteAtomic(path, job);
-        return Path.GetRelativePath(settings.WorkspacePath, path).Replace(Path.DirectorySeparatorChar, '/');
+        return Path.GetFullPath(path);
     }
 
     private string EnsurePending()
@@ -61,12 +59,6 @@ public sealed class CaptureStore
     private void EnsureConfigured()
     {
         if (!IsConfigured) throw new InvalidOperationException("Choose an existing workspace folder before capturing.");
-    }
-
-    private static string SafeRelativeFolder(string value, string fallback)
-    {
-        var candidate = global::Moment.WorkspacePath.ValidateFolder(string.IsNullOrWhiteSpace(value) ? fallback : value, "Audio folder");
-        return candidate.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
     }
 
     private static void WriteAtomic<T>(string path, T value)

@@ -8,11 +8,10 @@ Moment is a native Windows capture app built with WinUI 3 and the Windows App SD
 - A compact PiP text surface with immediate keyboard focus.
 - A compact PiP voice surface with WebM/Opus recording and live no-audio feedback.
 - One new **recurring note** per calendar day, with configurable filename format, prefix, template insertion, headings, and timestamps.
-- Workspace-relative folder pickers for Text Notes, Voice Notes, and Transcriptions. Paths outside the selected workspace are rejected with a visible error.
+- Folder pickers for Text Notes, Voice Notes, and Transcriptions. Each output can be placed anywhere on the computer, independently of the selected workspace.
 - Optional local Whisper transcription. Audio stays local and remains in the configured audio folder when transcription is unavailable.
 - Separate transcript notes, recurring-note output, or both destinations.
 - A durable Moment queue under `.moment/capture/pending`, `.moment/capture/completed`, and `.moment/capture/failed` so voice processing survives restarts.
-- Optional workspace compatibility: when present, Moment can read `.obsidian/daily-notes.json` or `.obsidian/plugins/periodic-notes/data.json` for the recurring-note folder, filename format, and template. These files are read-only and are not required.
 - Native Windows tray behavior, startup registration, updates, and a real per-user NSIS installer.
 
 ## Build

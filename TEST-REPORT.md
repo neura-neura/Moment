@@ -7,13 +7,12 @@ This report covers the standalone Moment native application. The manual Windows 
 ## Automated coverage
 
 - Native WinUI 3 Release build.
-- Recurring-note creation, templates, insertion positions, heading behavior, timestamps, localized filename formats, prefixes, and collision reuse.
-- Workspace-safe path validation.
+- Recurring-note creation, insertion positions, heading behavior, timestamps, localized filename formats, prefixes, and collision reuse.
+- Configurable output folders inside or outside the selected workspace.
 - WebM voice storage and configurable transcript destinations.
 - Durable pending, completed, and failed voice queues.
 - Silent-capture rejection before queueing.
 - Verified Whisper download finalization.
-- Optional read-only compatibility with `.obsidian/daily-notes.json` and `.obsidian/plugins/periodic-notes/data.json`.
 
 ## Manual-only coverage
 

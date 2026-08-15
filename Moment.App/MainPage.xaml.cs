@@ -173,8 +173,9 @@ public sealed partial class MainPage : Page
             Spacing = 10,
             Children =
             {
-                Heading("Text note filename", 18),
-                Body("Customize the recurring note name created by the text and voice shortcuts. If the name already exists, Moment reuses it and appends the capture instead of overwriting it."),
+                Heading("Text note properties", 18),
+                Body("Choose where Text Notes are saved and customize the recurring note name. Moment creates one new recurring note for each calendar day; an existing name is reused so new captures are appended safely."),
+                Labeled("Text notes folder", FolderEditor(recurringNoteFolderText, ChooseRecurringNoteFolderClick), "Folder where recurring Text Notes are saved. Choose any folder; the default is the selected workspace folder."),
                 Labeled("Filename format", recurringNoteFilenameFormatText, "Date tokens use the Windows regional language for month and weekday names. Default: YYYY-MM-DD."),
                 Labeled("Filename prefix", recurringNoteFilenamePrefixText, "Optional text placed before the generated date filename.")
             }
@@ -199,8 +200,7 @@ public sealed partial class MainPage : Page
             Children =
             {
                 Heading("Template", 18),
-                Body("Moment follows the configured recurring-note folder, filename format, and template. If a note for the current day does not exist, Moment creates it before inserting the text note. Optional workspace metadata can provide these settings automatically; if it is absent, Moment uses its own defaults."),
-                Labeled("Text notes folder", FolderEditor(recurringNoteFolderText, ChooseRecurringNoteFolderClick), "Folder where recurring Text Notes are saved. It must be inside the selected workspace. Default: the compatible workspace folder, or the workspace root when no metadata is available."),
+                Body("Choose how captures are inserted into the recurring note. If a note for the current day does not exist, Moment creates it before inserting the Text Note."),
                 Labeled("Insertion", recurringNoteInsertionCombo, "Where the text note is placed in the recurring note."),
                 recurringNoteTargetHeadingField,
                 recurringNoteMissingHeadingField,
@@ -210,7 +210,6 @@ public sealed partial class MainPage : Page
                 recurringNoteCloseAfterSaveCheck
             }
         };
-        ToolTipService.SetToolTip(recurringNoteCard, "Optional workspace compatibility: Moment can read .obsidian/daily-notes.json or .obsidian/plugins/periodic-notes/data.json when available. These files provide the folder, filename format, and template only; if they are missing, Moment uses its built-in defaults.");
         timestampEnabledCheck.Checked += (_, _) => recurringNoteTimestampText.IsEnabled = true;
         timestampEnabledCheck.Unchecked += (_, _) => recurringNoteTimestampText.IsEnabled = false;
         ToolTipService.SetToolTip(timestampEnabledCheck, "Adds a timestamp heading to text and voice entries. Uncheck it when you want only the note/transcription text.");
@@ -298,9 +297,8 @@ public sealed partial class MainPage : Page
             Children =
             {
                 Heading("Recording", 18),
-                Body("Recordings are stored as compact WebM/Opus files inside the selected workspace folder."),
+                Body("Recordings are stored as compact WebM/Opus files in the folder configured under Voice note properties."),
                 Labeled("Input device", audioInputDeviceCombo, "Microphone used for voice recordings. Windows default is selected initially; choose a physical microphone if the default is a virtual cable."),
-                Labeled("Audio folder", FolderEditor(audioFolderText, ChooseAudioFolderClick), "WebM recordings are saved here. Default: Voice Notes in the selected workspace."),
                 Labeled("Quality", audioBitrateCombo, "WebM/Opus bitrate. 64 kbps is recommended for speech."),
                 includeAudioEmbedCheck
             }
@@ -316,8 +314,9 @@ public sealed partial class MainPage : Page
             Spacing = 10,
             Children =
             {
-                Heading("Voice note filename", 18),
-                Body("Customize the WebM filename created for each voice note. If a generated name already exists, Moment adds a numeric suffix instead of overwriting it."),
+                Heading("Voice note properties", 18),
+                Body("Choose where WebM recordings are saved and customize their filenames. If a generated name already exists, Moment adds a numeric suffix instead of overwriting it."),
+                Labeled("Audio folder", FolderEditor(audioFolderText, ChooseAudioFolderClick), "Folder where WebM recordings are saved. Choose any folder; the default is Voice Notes relative to the selected workspace."),
                 Labeled("Filename format", voiceFilenameFormatText, "Date tokens are formatted with your Windows regional language where applicable."),
                 Labeled("Filename prefix", voiceFilenamePrefixText, "Optional text placed before the generated WebM filename.")
             }
@@ -330,7 +329,7 @@ public sealed partial class MainPage : Page
         whisperInstallButton.Click += WhisperInstallClick;
         whisperStatusText.Opacity = 0.72;
         ToolTipService.SetToolTip(transcriptionCheck, "After recording, run local Whisper and route the recognized text to the selected destination.");
-        transcriptionFolderField = Labeled("Transcriptions folder", FolderEditor(transcriptionFolderText, ChooseTranscriptionFolderClick), "Transcript Markdown files are saved here. Default: Voice Transcriptions inside the selected workspace. This is only needed for Separate transcription note or Both destinations.");
+        transcriptionFolderField = Labeled("Transcriptions folder", FolderEditor(transcriptionFolderText, ChooseTranscriptionFolderClick), "Folder where separate transcript Markdown files are saved. Choose any folder; the default is Voice Transcriptions relative to the selected workspace. This is only needed for Separate transcription note or Both destinations.");
         transcriptionFilenameFormatField = Labeled("Filename format", transcriptionFilenameFormatText, "Tokens: YYYY year, MM month number, DD day, HH hour, mm minute, ss second, and SSS milliseconds. Moment adds .md automatically. Default: YYYY-MM-DD HH-mm-ss-SSS.");
         transcriptionFilenamePrefixField = Labeled("Filename prefix", transcriptionFilenamePrefixText, "Text placed before each separate transcript filename. Example: Transcript- creates Transcript-2026-08-14 19-30-00-000.md.");
         var transcriptionDestinationField = Labeled("Destination", transcriptionDestinationCombo, "Choose Text Note, a separate note, or both.");
@@ -339,8 +338,8 @@ public sealed partial class MainPage : Page
             Spacing = 10,
             Children =
             {
-                Heading("Local transcription", 18),
-                Body("Whisper runs locally and is downloaded only when you enable it. The selected model is stored in your Windows user profile. If a transcription fails, the audio remains in the Audio folder and Moment shows a Windows notification; no audio is copied into the transcription folder."),
+                Heading("Local transcription properties", 18),
+                Body("Whisper runs locally and is downloaded only when you enable it. The selected model is stored in your Windows user profile. If a transcription fails, the audio remains in the Audio folder and Moment shows a Windows notification; no audio is copied into the Transcriptions folder."),
                 transcriptionCheck,
                 Labeled("Language", whisperLanguageCombo, "Language passed to Whisper. Auto detects the spoken language."),
                 Labeled("Model", whisperModelCombo, "Local Whisper model. Larger models can be more accurate and slower."),
@@ -486,9 +485,7 @@ public sealed partial class MainPage : Page
         recurringNoteTimestampText.Text = settings.RecurringNoteTimestampFormat;
         recurringNoteFilenameFormatText.Text = settings.RecurringNoteFilenameFormat;
         recurringNoteFilenamePrefixText.Text = settings.RecurringNoteFilenamePrefix;
-        recurringNoteFolderText.Text = string.IsNullOrWhiteSpace(settings.RecurringNoteFolder)
-            ? ReadCompatibleRecurringNoteFolder()
-            : settings.RecurringNoteFolder;
+        recurringNoteFolderText.Text = settings.RecurringNoteFolder;
         timestampEnabledCheck.IsChecked = settings.IncludeTimestamp;
         recurringNoteTimestampText.IsEnabled = settings.IncludeTimestamp;
         recurringNoteEnterToSaveCheck.IsChecked = settings.RecurringNoteEnterToSave;
@@ -537,12 +534,6 @@ public sealed partial class MainPage : Page
         if (recurringNoteMissingHeadingField is not null) recurringNoteMissingHeadingField.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    private string ReadCompatibleRecurringNoteFolder()
-    {
-        if (string.IsNullOrWhiteSpace(settings.WorkspacePath) || !Directory.Exists(settings.WorkspacePath)) return "";
-        return RecurringNoteProviderSettings.Load(settings.WorkspacePath).Folder;
-    }
-
     private void UpdateTranscriptionFolderVisibility()
     {
         var needsSeparateNote = transcriptionDestinationCombo.SelectedIndex is 0 or 2;
@@ -561,17 +552,16 @@ public sealed partial class MainPage : Page
         if (folder is not null)
         {
             settings.WorkspacePath = folder.Path;
-            settings.RecurringNoteFolder = "";
             UpdateFields();
             statusBar.Text = "Workspace selected. Save settings before capturing.";
         }
     }
 
-    private async void ChooseRecurringNoteFolderClick(object sender, RoutedEventArgs args) => await ChooseWorkspaceRelativeFolderAsync(recurringNoteFolderText, ReadCompatibleRecurringNoteFolder());
+    private async void ChooseRecurringNoteFolderClick(object sender, RoutedEventArgs args) => await ChooseFolderAsync(recurringNoteFolderText);
 
-    private async void ChooseAudioFolderClick(object sender, RoutedEventArgs args) => await ChooseWorkspaceRelativeFolderAsync(audioFolderText, "Voice Notes");
+    private async void ChooseAudioFolderClick(object sender, RoutedEventArgs args) => await ChooseFolderAsync(audioFolderText);
 
-    private async void ChooseTranscriptionFolderClick(object sender, RoutedEventArgs args) => await ChooseWorkspaceRelativeFolderAsync(transcriptionFolderText, "Voice Transcriptions");
+    private async void ChooseTranscriptionFolderClick(object sender, RoutedEventArgs args) => await ChooseFolderAsync(transcriptionFolderText);
 
     private void RefreshAudioInputDevices()
     {
@@ -580,13 +570,8 @@ public sealed partial class MainPage : Page
         if (audioInputDeviceCombo.Items.Count > 0) audioInputDeviceCombo.SelectedIndex = 0;
     }
 
-    private async Task ChooseWorkspaceRelativeFolderAsync(TextBox target, string fallback)
+    private async Task ChooseFolderAsync(TextBox target)
     {
-        if (string.IsNullOrWhiteSpace(settings.WorkspacePath) || !Directory.Exists(settings.WorkspacePath))
-        {
-            ReportFolderError("Choose an existing workspace before selecting a subfolder.");
-            return;
-        }
         var picker = new FolderPicker();
         picker.FileTypeFilter.Add("*");
         InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(App.CurrentWindow));
@@ -594,14 +579,7 @@ public sealed partial class MainPage : Page
         if (folder is null) return;
         try
         {
-            var root = Path.GetFullPath(settings.WorkspacePath).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-            var selected = Path.GetFullPath(folder.Path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-            var relative = Path.GetRelativePath(root, selected);
-            if (relative == ".") relative = fallback;
-            var label = ReferenceEquals(target, recurringNoteFolderText) ? "Text notes folder" :
-                ReferenceEquals(target, audioFolderText) ? "Audio folder" : "Transcriptions folder";
-            var validated = ValidateWorkspaceFolder(relative, label);
-            target.Text = validated;
+            target.Text = Path.GetFullPath(folder.Path);
             statusBar.Text = $"Folder selected: {target.Text}";
         }
         catch (Exception error)
@@ -610,12 +588,13 @@ public sealed partial class MainPage : Page
         }
     }
 
-    private string ValidateWorkspaceFolder(string value, string label, string? fallback = null)
+    private static string NormalizeConfiguredFolder(string value, string fallback)
     {
-        if (string.IsNullOrWhiteSpace(settings.WorkspacePath) || !Directory.Exists(settings.WorkspacePath))
-            throw new InvalidOperationException("Choose an existing workspace before selecting folders.");
-        var candidate = string.IsNullOrWhiteSpace(value) ? fallback ?? "" : value.Trim();
-        return WorkspacePath.ValidateFolder(candidate, label).Replace('/', Path.DirectorySeparatorChar);
+        var candidate = string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+        if (candidate.Length == 0) return "";
+        return Path.IsPathRooted(candidate)
+            ? Path.GetFullPath(candidate)
+            : candidate.Replace('/', Path.DirectorySeparatorChar).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
     }
 
     private void ReportFolderError(string message)
@@ -672,9 +651,9 @@ public sealed partial class MainPage : Page
         string transcriptionFolder;
         try
         {
-            recurringNoteFolder = ValidateWorkspaceFolder(recurringNoteFolderText.Text, "Text notes folder");
-            audioFolder = ValidateWorkspaceFolder(audioFolderText.Text, "Audio folder", "Voice Notes");
-            transcriptionFolder = ValidateWorkspaceFolder(transcriptionFolderText.Text, "Transcriptions folder", "Voice Transcriptions");
+            recurringNoteFolder = NormalizeConfiguredFolder(recurringNoteFolderText.Text, "");
+            audioFolder = NormalizeConfiguredFolder(audioFolderText.Text, "Voice Notes");
+            transcriptionFolder = NormalizeConfiguredFolder(transcriptionFolderText.Text, "Voice Transcriptions");
         }
         catch (Exception error)
         {
