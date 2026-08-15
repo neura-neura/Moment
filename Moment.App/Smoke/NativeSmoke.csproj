@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="..\MomentSettings.cs" Link="MomentSettings.cs" />
+    <Compile Include="..\RecurringNoteService.cs" Link="RecurringNoteService.cs" />
+    <Compile Include="..\CaptureStore.cs" Link="CaptureStore.cs" />
+    <Compile Include="..\NativeVoiceProcessor.cs" Link="NativeVoiceProcessor.cs" />
+    <Compile Include="..\WhisperEngine.cs" Link="WhisperEngine.cs" />
+    <Compile Include="..\NativeMessages.cs" Link="NativeMessages.cs" />
+    <Compile Include="..\NativeConstants.cs" Link="NativeConstants.cs" />
+  </ItemGroup>
+</Project>

@@ -1,88 +1,82 @@
-# Manual Obsidian and WinUI bridge test plan
+# Moment manual test plan
 
-Automated checks cover Daily Note transforms, provider settings, templates, insertion modes, headings, frontmatter, timestamps, paths with spaces, WebM routing, native migration, durable voice jobs, and the native Release build. The checks below require a real Obsidian Desktop instance, Windows microphone permission, WinUI rendering, physical F13-F24/Stream Deck input, or human visual inspection. **This plan has been updated for native bridge ownership but has not been executed.**
+Automated checks cover recurring-note transforms, templates, insertion modes, headings, localized filenames, timestamps, workspace-safe paths, WebM routing, durable voice jobs, the native Release build, and verified Whisper downloads. The checks below require a real Windows microphone, physical F13-F24 or Stream Deck input, WinUI rendering, Windows tray behavior, or human visual inspection. **This plan has been updated for the standalone Moment app and has not been executed.**
 
-## Preparation
+## 1. Test workspace
 
-1. Create or back up a disposable vault whose path contains spaces.
-2. Enable Daily Notes or the Periodic Notes daily provider and configure a folder, filename format, and template.
-3. If the vault previously used the two capture plugins, their folders may remain for comparison. Do not depend on them for the native test.
-4. Build Moment with `npm run package:bridge`, or run the published installer. The local installer is `quick-capture-bridge-winui/dist/MomentSetup-x64.exe`.
-5. Verify that the installer opens a real setup wizard (not a 7-Zip extraction dialog), does not request an MSIX certificate, offers Start menu and Desktop shortcut components with Desktop shortcut selected by default, appears in Apps & features, and offers an uninstaller.
-6. Select both shortcut components, finish with **Launch Moment** enabled, and verify the app opens visibly in the foreground from the Finish page. Verify both shortcuts launch the same `Moment.exe`.
-7. Launch Moment, choose this disposable vault, configure the Text Note and Voice pages, and save. Leave Moment running. Do not run this manual plan during automated verification.
+1. Create or back up a disposable workspace whose path contains spaces.
+2. Add a Markdown template and configure a recurring-note folder, filename format, and template in Moment.
+3. Optionally add `.obsidian/daily-notes.json` or `.obsidian/plugins/periodic-notes/data.json` to verify read-only workspace compatibility. Moment must be the only capture process.
+4. Confirm the workspace contains no `.moment` folder before the first capture.
 
-## WinUI bridge setup and registration
+## 2. First launch, tray, and installer
 
-1. Verify the native WinUI 3 surface uses a left NavigationView with **Text Note**, **Voice**, **Shortcuts**, and footer **Settings** sections.
-2. Click the voice shortcut field and press physical `F13`; verify the field displays `F13`. Repeat with `F24` and with `Ctrl + Shift + F13`.
-3. Click the text shortcut field and press physical `F14`; verify the field displays `F14`. Repeat with a letter, arrow, and `Alt + Shift + letter`.
-4. Click **Register shortcuts**. Verify each row reports **Registered** and the status identifies both bindings.
-5. Intentionally choose the same binding for voice and text. Verify text reports that the bindings must be different while voice remains independently registered.
-6. Register a key already owned by another application. Verify the row reports the conflict and the other row remains usable.
-7. Save settings, close and relaunch Moment, and verify the vault and bindings persist in `%LOCALAPPDATA%\Moment\settings.json`.
-8. Enable **Start with Windows**, sign out/in or restart the app, and verify the bridge starts minimized and still registers both shortcuts.
-9. With **Keep running in the tray when the window is closed** enabled, close the settings window. Verify the process remains active, the tray icon is visible, and the tray Exit command stops the process.
-10. Launch Moment again while it is visible and verify no second process/window is created; the existing window simply receives focus. Hide it to the tray and launch Moment again; verify the existing window is restored and focused.
-11. On a fresh bridge launch, press the voice shortcut once, speak, and press it once to stop. Verify the first stop press closes the recording; a third press must not be required.
+1. Install `MomentSetup-x64.exe` with the Desktop shortcut option enabled by default.
+2. Leave **Launch Moment** checked on the installer finish page and verify the app opens in the foreground.
+3. Close the settings window and verify Moment remains in the notification tray.
+4. Open Moment from the tray and verify the settings window is restored and focused.
+5. Launch Moment again while it is already running. Verify no second process is created: the existing window is restored and focused.
+6. Enable **Start with Windows**, sign out/in, and verify Moment starts in the tray without stealing focus.
+7. Uninstall Moment and verify its installed files, shortcuts, and uninstall entry are removed without deleting the selected workspace or its notes.
 
-## Native Text Note capture
+## 3. Workspace and recurring-note settings
 
-1. On the Text Note page, verify the text-file insertion mode, target heading, missing-heading behavior, timestamp format, Enter-to-save, and close-after-save values.
-2. Delete today's test daily file. Press the text shortcut, type `Research this concept.`, and press Enter.
-3. Verify the small titleless writing canvas appears above the taskbar, owns focus immediately, saves once, and closes without a disabled-frame flash.
-4. Open today's note in Obsidian and verify the provider template remains intact and the entry uses the invocation minute.
-5. Set insertion to **Under a heading -> Notes** and repeat with multiline Spanish, Chinese, Japanese, and emoji text using Shift+Enter.
-6. Rename/remove the target heading and test create, append, and error behavior.
-7. Test **Beginning of note** with YAML frontmatter and verify frontmatter remains first.
-8. Trigger several captures rapidly and verify every entry survives without stale overwrites.
-9. Keep today's note open and edited while capturing; verify the bridge's atomic update preserves the latest file content.
-10. Move focus to another application while the editor is open. Verify the editor closes like Escape and does not save.
+1. Choose the disposable workspace and save settings.
+2. Verify the UI says **Selected workspace** and the button says **Choose workspace...**.
+3. Configure a filename format with localized month text and a prefix such as `Journal-`.
+4. Verify **Recurring note** explains that one new note is created for each calendar day.
+5. Test **End of recurring note**, **Beginning of recurring note**, and **Under a heading**.
+6. For **Under a heading**, verify **Target heading** and **Missing heading** appear only for that insertion mode.
+7. Test all missing-heading behaviors: create the heading, append at the end, and show an error.
+8. Toggle the timestamp option off and confirm a text capture contains no timestamp heading. Toggle it on and confirm the configured format is used.
+9. Capture twice with the same filename. Verify the existing recurring note is reused and the second entry is appended without overwriting the first.
+10. If optional workspace metadata is present, verify Moment reads the folder, filename format, and template. Remove or rename those files and verify capture still works with Moment's built-in defaults.
 
-## Native voice capture and routing
+## 4. Global shortcuts and text PiP
 
-1. On the Voice page, choose an input device, audio folder, voice-note filename format/prefix, bitrate, destination, audio-embed option, and (when the destination includes a separate note) transcription folder and filename format/prefix. Verify the controls persist after saving. If Windows default is a virtual cable, choose the physical microphone explicitly.
-2. Press the voice shortcut. Verify only the compact native top-center island appears, recording starts automatically, and it shows the red recording ring, moving level bars, and native Stop/Cancel controls without status text.
-3. Leave the selected microphone silent for about two seconds. Verify the recording island keeps its original compact size and replaces the wave bars with a small red **No audio** warning while recording is still active. Speak into the selected microphone and verify the warning clears without interrupting recording.
-4. Speak for several seconds, then press the same shortcut again. Verify the island disappears immediately without a disabled-button flash and a WebM/Opus file exists under the selected audio folder.
-5. Verify a durable JSON job appears under `.quick-capture\bridge-inbox` and points to the WebM file with the correct relative path and MIME type.
-6. With destination **Separate transcription note** and transcription disabled, verify a Markdown note is created with the optional WebM embed.
-7. With destination **Text Note**, verify the audio entry is inserted using the recording start timestamp. With **Both**, verify both Markdown destinations exist.
-8. Deny microphone permission and verify a human-readable Windows microphone error is shown without leaving a partial job.
-9. Start another recording, press Escape or Cancel, and verify no new Markdown/job output is created.
-10. Close Obsidian completely, capture text and voice, then open Obsidian. Verify all output is already present without requiring either capture plugin.
-11. Inspect `.quick-capture\bridge-processed` and `.quick-capture\bridge-failed`. Force a missing audio path and verify the failure sidecar is retained for diagnosis. Record once from a muted/silent device and stop: verify the inline **No audio** warning appeared during recording, the WebM is discarded, no job is enqueued, and Whisper is not invoked. Existing legacy silent jobs should explain that Whisper is installed and no speech was detected without telling the user to reinstall it.
-12. Change the bridge to a second vault, repeat one text and one voice capture, and verify output routes only to the second vault.
+1. Register ordinary modifier combinations and physical F13-F24/Stream Deck keys.
+2. Verify the settings page reports registration failures instead of silently accepting an unavailable shortcut.
+3. Trigger the text shortcut while another application is focused.
+4. Verify the compact PiP text surface appears at the intended lower-right position, uses native window behavior, receives focus immediately, and accepts typing without a click.
+5. Press Enter to save and Shift+Enter to insert a line break. Verify Escape or changing focus closes the surface without saving.
+6. Confirm the generated Markdown entry contains the capture text and, when enabled, the timestamp.
 
-## Text Note and Voice settings
+## 5. Voice PiP and audio storage
 
-1. Select **End of daily file** and verify Target heading and Missing heading are hidden. Select **Under a heading** and verify both fields appear together.
-2. Use **Create the heading**, **Append at the end**, and **Show an error** with a missing target heading and verify each behavior.
-3. Uncheck **Add capture timestamp** and verify both text and voice entries omit the timestamp heading while still using their normal destinations.
-4. Use the Audio folder and Transcriptions folder **Browse...** buttons. Verify the selected paths are stored relative to the selected vault and default to `Voice Notes` and `Voice Transcriptions`.
-5. Choose destination **Text Note**, **Separate transcription note**, and **Both**. Verify Transcriptions folder, its Filename format, and its Filename prefix are hidden for Text Note and visible for the other two destinations.
-6. Set a voice filename format such as `YYYY-MM-DD-[voice]-HH-mm` and prefix `Meeting-`; set a separate transcript format such as `DD MMMM YYYY` and prefix `Transcript-`. Capture with a separate-note destination and verify both `.webm` and `.md` names use the configured values and receive numeric suffixes on collisions.
-6. Hover the Fluent `Info` help markers and verify each tooltip uses the native system-colored rounded tooltip and explains the associated setting.
-7. In **Text Note → Text Note filename**, verify the default format is `YYYY-MM-DD`. Try `DD MMMM YYYY` and a prefix such as `Journal-`; verify month names follow the Windows regional language. Capture twice with the same generated name and verify both entries reuse the same Markdown file rather than overwriting or creating an accidental duplicate.
+1. Select a physical microphone in **Voice → Recording**.
+2. Trigger the voice shortcut and verify the compact centered-top PiP surface appears without a title or unnecessary status text.
+3. Speak and verify the waveform responds. Stop with the same shortcut and verify the surface closes without a disabled-state flicker.
+4. Confirm the recording is a WebM/Opus file in the configured **Voice Notes** folder.
+5. Start a recording with a muted or silent microphone. Verify the PiP changes to a compact **No audio** warning while recording, the recording is discarded on stop, and no transcription job is created.
+6. Cancel a recording and verify no audio file or queue job remains.
 
-## Local Whisper
+## 6. Local transcription
 
-1. Enable transcription and select **Base multilingual**.
-2. Choose **Install / repair Whisper** and verify progress/status updates and no terminal window appears.
-3. Record a clear English sentence, a Spanish sentence, and, if possible, Chinese/Japanese speech. Verify separate notes contain real Whisper output and audio embeds.
-4. Temporarily rename `whisper-cli.exe` or the selected model, record again, and verify the audio survives with a clear repair instruction and a failed job sidecar.
-5. Select a model that is not installed and verify status reports it missing until installed.
-6. Make two short recordings in rapid succession and verify both audio files save immediately while transcriptions run one at a time.
-7. Block the network and click **Install / repair Whisper**. Verify a clear HTTP/checksum error appears and no partial model is treated as ready.
+1. Enable local transcription and verify the Whisper status is clear before recording.
+2. Use **Install / repair Whisper** and confirm the engine/model files are validated or downloaded into `%LOCALAPPDATA%\Moment\whisper`.
+3. Record a spoken note and verify the selected destination:
+   - **Text Note** writes to the recurring note.
+   - **Separate transcription note** writes to the configured Transcriptions folder.
+   - **Both** writes to both destinations.
+4. Verify the configured transcription filename format and prefix are applied.
+5. Disable or corrupt Whisper deliberately, record a voice note, and verify the audio remains in Voice Notes while Moment shows an actionable Windows notification. Retry only after Whisper is ready.
+6. Verify silent recordings are not sent to Whisper.
 
-## Obsidian compatibility and visual inspection
+## 7. Durable queue and restart behavior
 
-1. Open the resulting text-note file in Obsidian and verify audio embeds resolve from the configured relative path.
-2. If the legacy plugins remain enabled for comparison, verify their in-Obsidian commands still work and the public Daily Capture API remains compatible. This is optional and is not part of native bridge ownership.
-3. Test the settings and both PiP panels in light and dark themes, at 200% UI zoom, with a narrow window, and with reduced motion enabled.
-4. Verify visible keyboard focus on shortcut fields, the text editor, and recorder buttons. With NVDA if available, verify names for the recording indicator and Stop/Cancel controls.
-5. From Settings, click **Check for updates**. Verify the current release reports that it is up to date and the status wraps inside the card. For a newer release, verify the installer checksum is validated after the download stream closes, Moment exits, and the normal NSIS installer starts without a file-lock error.
+1. During a voice capture, close Moment or terminate it after the WebM is finalized.
+2. Relaunch Moment and verify the pending job under `.moment\capture\pending` is processed.
+3. Verify completed jobs move to `.moment\capture\completed`.
+4. Force a missing audio path and verify the job moves to `.moment\capture\failed` with an `.error.txt` sidecar.
+5. Use **Retry failed jobs** and verify retryable jobs return to `pending`.
+6. Verify the old `.quick-capture` queue is neither created nor read.
 
-## Expected result
+## 8. Compatible Markdown editor verification
 
-Every global shortcut must produce either the requested PiP action or a visible registration/error status. Native text and voice captures must remain durable across Obsidian being closed, bridge restarts, and removal of both legacy plugins. Whisper installation, bridge installation, and this manual plan are separate checks; this plan is intentionally pending execution.
+1. Open the generated recurring note and transcript in any compatible Markdown editor and verify formatting, headings, timestamps, and audio references.
+2. Confirm Moment does not need the editor to be running during capture.
+3. Verify all output remains in the selected workspace and that switching to a second workspace routes subsequent captures only there.
+
+## Completion criteria
+
+Every global shortcut must produce the requested PiP action or a visible registration/error status. Text and voice captures must remain durable across Moment restarts, Windows sign-in, and a closed Markdown editor. Whisper installation, installer behavior, and this manual plan are separate checks; this plan remains intentionally pending execution.
