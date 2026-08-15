@@ -4,7 +4,7 @@
 
 Moment is the native Windows application for frictionless Obsidian capture. It is built with WinUI 3 and Windows App SDK, so its settings window and both always-on-top picture-in-picture (PiP) capture panels use the same native UI stack. Moment runs independently; Quick Daily Capture and Quick Voice Notes are optional legacy integrations.
 
-It is made to work alongside Obsidian, while remaining useful with Obsidian closed or without the capture plugins. The public source and releases are published at [github.com/neura-neura/Moment](https://github.com/neura-neura/Moment). The current Windows release is [Moment 1.2.7](https://github.com/neura-neura/Moment/releases/tag/v1.2.7).
+It is made to work alongside Obsidian, while remaining useful with Obsidian closed or without the capture plugins. The public source and releases are published at [github.com/neura-neura/Moment](https://github.com/neura-neura/Moment). The current Windows release is [Moment 1.2.8](https://github.com/neura-neura/Moment/releases/tag/v1.2.8).
 
 The settings window uses a native WinUI NavigationView: Text Note, Voice, and Shortcuts are in the left menu, while startup and tray behavior live under the footer Settings section. The Save settings action remains available in the native footer across sections.
 
@@ -22,13 +22,14 @@ Moment remains useful while Obsidian is closed or another application, including
 - Optional local Whisper transcription is installed and repaired from the Voice page. Output is written as Markdown in the vault, with a WebM embed when enabled; Daily Note insertion and separate-note fallback are handled natively.
 - Text Note timestamps can be enabled or disabled for both text and voice destinations. Audio and transcript folders are selected relative to the vault with native folder pickers.
 - The Settings page includes a GitHub update checker that verifies the release checksum before launching the normal Windows installer.
+- Moment keeps one per-user instance: launching it again focuses the existing settings window, restoring it from the notification tray when necessary.
 - Optional per-user "Start with Windows" registration through the installed executable, with a minimized launch mode.
 - Closing the settings window can keep Moment alive in the Windows notification tray; use the tray menu to reopen it or exit completely.
 - Native processing uses `.quick-capture/bridge-inbox`, `.quick-capture/bridge-processed`, and `.quick-capture/bridge-failed` so captures survive restarts. Legacy `.quick-capture/inbox` jobs are adopted after both legacy plugins are disabled or removed.
 
 ## Windows installer (EXE)
 
-Download the current Windows installer from the public [Moment v1.2.7 release](https://github.com/neura-neura/Moment/releases/tag/v1.2.7). Choose `MomentSetup-x64.exe` from the release assets.
+Download the current Windows installer from the public [Moment v1.2.8 release](https://github.com/neura-neura/Moment/releases/tag/v1.2.8). Choose `MomentSetup-x64.exe` from the release assets.
 
 For local development, build the native Windows installer:
 
@@ -36,7 +37,7 @@ For local development, build the native Windows installer:
 npm run package:bridge
 ```
 
-The output is created in `quick-capture-bridge-winui/dist/` as `MomentSetup-x64.exe`. It is a real NSIS installer with a setup wizard, selectable per-user installation folder, Start menu shortcut, Add/Remove Programs registration, uninstaller, and optional launch after setup. It installs to `%LOCALAPPDATA%\Programs\Moment` by default. It does not install an MSIX package and does not request a package certificate. Packaging removes its intermediate payload files, so `dist` contains only the installer after the command completes.
+The output is created in `quick-capture-bridge-winui/dist/` as `MomentSetup-x64.exe`. It is a real NSIS installer with a setup wizard, selectable per-user installation folder, Start menu shortcut, Desktop shortcut selected by default, Add/Remove Programs registration, uninstaller, and optional launch after setup. It installs to `%LOCALAPPDATA%\Programs\Moment` by default. It does not install an MSIX package and does not request a package certificate. Packaging removes its intermediate payload files, so `dist` contains only the installer after the command completes.
 
 ## Build from source
 

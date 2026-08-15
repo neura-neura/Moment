@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Threading;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
@@ -14,6 +15,13 @@ public static class Program
     [STAThread]
     private static void Main(string[] args)
     {
+        using var instanceMutex = new Mutex(true, @"Local\Moment.SingleInstance", out var createdNew);
+        if (!createdNew)
+        {
+            ActivateExistingInstance();
+            return;
+        }
+
         EnsureInsightsResourceLoaded();
         TouchPackageIdentity();
         WinRT.ComWrappersSupport.InitializeComWrappers();
@@ -25,6 +33,23 @@ public static class Program
             SynchronizationContext.SetSynchronizationContext(context);
             new App();
         });
+    }
+
+    private static void ActivateExistingInstance()
+    {
+        // The first instance may still be creating its WinUI window. Give it
+        // a short window to finish, then bring the hidden/tray window forward.
+        for (var attempt = 0; attempt < 20; attempt++)
+        {
+            var hwnd = FindWindow(null, "Moment");
+            if (hwnd != nint.Zero)
+            {
+                NativeWindowUtilities.Activate(hwnd);
+                return;
+            }
+
+            Thread.Sleep(50);
+        }
     }
 
     private static void EnsureInsightsResourceLoaded()
@@ -55,4 +80,7 @@ public static class Program
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern nint LoadLibrary(string fileName);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern nint FindWindow(string? className, string windowName);
 }

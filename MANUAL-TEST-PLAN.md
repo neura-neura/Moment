@@ -8,7 +8,7 @@ Automated checks cover Daily Note transforms, provider settings, templates, inse
 2. Enable Daily Notes or the Periodic Notes daily provider and configure a folder, filename format, and template.
 3. If the vault previously used the two capture plugins, their folders may remain for comparison. Do not depend on them for the native test.
 4. Build Moment with `npm run package:bridge`, or run the published installer. The local installer is `quick-capture-bridge-winui/dist/MomentSetup-x64.exe`.
-5. Verify that the installer opens a real setup wizard (not a 7-Zip extraction dialog), does not request an MSIX certificate, offers selectable Start menu and Desktop shortcut components, appears in Apps & features, and offers an uninstaller.
+5. Verify that the installer opens a real setup wizard (not a 7-Zip extraction dialog), does not request an MSIX certificate, offers Start menu and Desktop shortcut components with Desktop shortcut selected by default, appears in Apps & features, and offers an uninstaller.
 6. Select both shortcut components, finish with **Launch Moment** enabled, and verify the app opens visibly in the foreground from the Finish page. Verify both shortcuts launch the same `Moment.exe`.
 7. Launch Moment, choose this disposable vault, configure the Text Note and Voice pages, and save. Leave Moment running. Do not run this manual plan during automated verification.
 
@@ -23,7 +23,8 @@ Automated checks cover Daily Note transforms, provider settings, templates, inse
 7. Save settings, close and relaunch Moment, and verify the vault and bindings persist in `%LOCALAPPDATA%\Moment\settings.json`.
 8. Enable **Start with Windows**, sign out/in or restart the app, and verify the bridge starts minimized and still registers both shortcuts.
 9. With **Keep running in the tray when the window is closed** enabled, close the settings window. Verify the process remains active, the tray icon is visible, and the tray Exit command stops the process.
-10. On a fresh bridge launch, press the voice shortcut once, speak, and press it once to stop. Verify the first stop press closes the recording; a third press must not be required.
+10. Launch Moment again while it is visible and verify no second process/window is created; the existing window simply receives focus. Hide it to the tray and launch Moment again; verify the existing window is restored and focused.
+11. On a fresh bridge launch, press the voice shortcut once, speak, and press it once to stop. Verify the first stop press closes the recording; a third press must not be required.
 
 ## Native Text Note capture
 

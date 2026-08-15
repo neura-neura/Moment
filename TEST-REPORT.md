@@ -13,7 +13,7 @@ npm run verify
 
 The final run passed **41 plugin tests**: 18 for Quick Daily Capture and 23 for Quick Voice Notes/integration. It also passed strict TypeScript checks, ESLint, production plugin builds, and the Release x64 WinUI bridge build with zero warnings or errors.
 
-The native bridge build validates the configurable global registration path, native NavigationView settings surface, compact WinUI overlays, live no-signal feedback integrated into the recording controls, configurable localized Text Note filenames and collision reuse, NAudio recorder wiring, silent-capture rejection before vault enqueue, WebM encoder integration, atomic vault writer, native voice processor compilation, field tooltips, tray notifications, the GitHub update checker, and release-version metadata.
+The native bridge build validates the configurable global registration path, native NavigationView settings surface, compact WinUI overlays, live no-signal feedback integrated into the recording controls, configurable localized Text Note filenames and collision reuse, NAudio recorder wiring, silent-capture rejection before vault enqueue, WebM encoder integration, atomic vault writer, native voice processor compilation, field tooltips, tray notifications, single-instance activation, the GitHub update checker, and release-version metadata.
 
 ## Native migration smoke test
 
@@ -31,10 +31,10 @@ The local x64 installer was regenerated at:
 
 `quick-capture-bridge-winui/dist/MomentSetup-x64.exe`
 
-SHA-256: `1787759E87A0D318EE3E6E12D484089DE4A1F5AC80A7F784E87EBE5637E5EA85`
-Size: 144,340,430 bytes
+SHA-256: `C39E204A0F93E820822FCBF29FB70C8D0F20E2A152C532D8F7BA73CACC831780`
+Size: 144,313,856 bytes
 
-It is a real NSIS setup executable with selectable Start menu/Desktop shortcuts, a per-user install directory, Add/Remove Programs registration, and uninstaller. Its Finish-page launch passes `--foreground` so Moment opens visibly instead of staying in the tray. It is not an MSIX package and does not require a development certificate. A silent disposable install created the app executable and uninstaller; the uninstaller then removed the target successfully. `dist` contains only the installer.
+It is a real NSIS setup executable with Start menu and Desktop shortcuts (Desktop selected by default), a per-user install directory, Add/Remove Programs registration, and uninstaller. Its Finish-page launch passes `--foreground` so Moment opens visibly instead of staying in the tray. It is not an MSIX package and does not require a development certificate. A silent disposable install created the app executable and uninstaller; the uninstaller then removed the target successfully. `dist` contains only the installer.
 
 The Settings UI now exposes Moment branding, an input-device selector, conditional Target heading and Missing heading fields, a shared timestamp toggle, vault-relative folder pickers, a native Fluent `Info` tooltip icon, a GitHub update button, and the `Made by neura-neura` repository link. Text Note filename format and prefix controls are grouped with the Text Note capture settings.
 

@@ -159,6 +159,22 @@ public sealed partial class MainPage : Page
         };
         content.Children.Add(vaultCard);
 
+        var filenameCard = Card();
+        ToolTipService.SetToolTip(dailyFilenameFormatText, "Tokens: YYYY year, MM month number, DD day, MMM/M MMMM localized month, and ddd/dddd localized weekday. Example: DD MMMM YYYY. MMMM and dddd use your Windows language. Use [text] for literal text.");
+        ToolTipService.SetToolTip(dailyFilenamePrefixText, "Text placed before the generated filename. Example: Journal- creates Journal-2026-08-14.");
+        filenameCard.Child = new StackPanel
+        {
+            Spacing = 10,
+            Children =
+            {
+                Heading("Text note filename", 18),
+                Body("Customize the daily file name created by the text and voice shortcuts. If the generated name already exists, Moment reuses it and appends the capture instead of overwriting it."),
+                Labeled("Filename format", dailyFilenameFormatText, "Date tokens use the Windows regional language for month and weekday names. Default: YYYY-MM-DD."),
+                Labeled("Filename prefix", dailyFilenamePrefixText, "Optional text placed before the generated date filename.")
+            }
+        };
+        content.Children.Add(filenameCard);
+
         var dailyCard = Card();
         dailyInsertionCombo.Items.Add("End of daily note");
         dailyInsertionCombo.Items.Add("Beginning of daily note");
@@ -176,8 +192,8 @@ public sealed partial class MainPage : Page
             Spacing = 10,
             Children =
             {
-                Heading("Text note", 18),
-                Body("Moment follows Obsidian's configured daily-file folder, filename format, and template. If today's file does not exist, it creates it before inserting the text note."),
+                Heading("Template", 18),
+                Body("Moment follows Obsidian's configured daily-file folder and template. If today's file does not exist, it creates it before inserting the text note."),
                 Labeled("Insertion", dailyInsertionCombo, "Where the text note is placed in the daily file."),
                 dailyTargetHeadingField,
                 dailyMissingHeadingField,
@@ -192,22 +208,6 @@ public sealed partial class MainPage : Page
         ToolTipService.SetToolTip(timestampEnabledCheck, "Adds a timestamp heading to text and voice entries. Uncheck it when you want only the note/transcription text.");
         UpdateDailyInsertionVisibility();
         content.Children.Add(dailyCard);
-
-        var filenameCard = Card();
-        ToolTipService.SetToolTip(dailyFilenameFormatText, "Tokens: YYYY year, MM month number, DD day, MMM/M MMMM localized month, and ddd/dddd localized weekday. Example: DD MMMM YYYY. MMMM and dddd use your Windows language. Use [text] for literal text.");
-        ToolTipService.SetToolTip(dailyFilenamePrefixText, "Text placed before the generated filename. Example: Journal- creates Journal-2026-08-14.");
-        filenameCard.Child = new StackPanel
-        {
-            Spacing = 10,
-            Children =
-            {
-                Heading("Text Note filename", 18),
-                Body("Customize the daily file name created by the text and voice shortcuts. If the generated name already exists, Moment reuses it and appends the capture instead of overwriting it."),
-                Labeled("Filename format", dailyFilenameFormatText, "Date tokens use the Windows regional language for month and weekday names. Default: YYYY-MM-DD."),
-                Labeled("Filename prefix", dailyFilenamePrefixText, "Optional text placed before the generated date filename.")
-            }
-        };
-        content.Children.Add(filenameCard);
 
         var flowCard = Card();
         flowCard.Child = new StackPanel
