@@ -34,15 +34,18 @@ public sealed partial class MainPage : Page
     private readonly CheckBox dailyCloseAfterSaveCheck = new() { Content = "Close the quick note after saving" };
     private readonly CheckBox dailyEnterToSaveCheck = new() { Content = "Enter saves (Shift+Enter inserts a new line)" };
     private readonly TextBox audioFolderText = new();
+    private readonly TextBox voiceFilenameFormatText = new() { PlaceholderText = "YYYY-MM-DD HH-mm-ss-SSS" };
+    private readonly TextBox voiceFilenamePrefixText = new() { PlaceholderText = "Optional prefix" };
     private readonly ComboBox audioInputDeviceCombo = new();
     private readonly ComboBox audioBitrateCombo = new();
     private readonly CheckBox transcriptionCheck = new() { Content = "Transcribe recordings locally with Whisper" };
     private readonly ComboBox whisperLanguageCombo = new();
     private readonly ComboBox whisperModelCombo = new();
     private readonly TextBox transcriptionFolderText = new();
+    private readonly TextBox transcriptionFilenameFormatText = new() { PlaceholderText = "YYYY-MM-DD HH-mm-ss-SSS" };
+    private readonly TextBox transcriptionFilenamePrefixText = new() { PlaceholderText = "Optional prefix" };
     private readonly CheckBox includeAudioEmbedCheck = new() { Content = "Include the WebM recording as an Obsidian embed" };
     private readonly ComboBox transcriptionDestinationCombo = new();
-    private readonly TextBox voicePrefixText = new();
     private readonly TextBlock whisperStatusText = new();
     private readonly Button whisperInstallButton = new();
     private readonly NativeWhisperEngine whisperEngine = new();
@@ -55,6 +58,8 @@ public sealed partial class MainPage : Page
     private readonly Grid sectionHost = new();
     private readonly Dictionary<string, ScrollViewer> sectionPages = new(StringComparer.Ordinal);
     private StackPanel? transcriptionFolderField;
+    private StackPanel? transcriptionFilenameFormatField;
+    private StackPanel? transcriptionFilenamePrefixField;
 
     public MainPage()
     {
@@ -300,13 +305,31 @@ public sealed partial class MainPage : Page
         ToolTipService.SetToolTip(includeAudioEmbedCheck, "Adds an Obsidian link such as ![[Voice Notes/recording.webm]] to the generated voice Markdown note.");
         content.Children.Add(audioCard);
 
+        var voiceFilenameCard = Card();
+        ToolTipService.SetToolTip(voiceFilenameFormatText, "Tokens: YYYY year, MM month number, DD day, HH hour, mm minute, ss second, and SSS milliseconds. Moment adds .webm automatically. Default: YYYY-MM-DD HH-mm-ss-SSS.");
+        ToolTipService.SetToolTip(voiceFilenamePrefixText, "Text placed before each WebM filename. Example: Meeting- creates Meeting-2026-08-14 19-30-00-000.webm.");
+        voiceFilenameCard.Child = new StackPanel
+        {
+            Spacing = 10,
+            Children =
+            {
+                Heading("Voice note filename", 18),
+                Body("Customize the WebM filename created for each voice note. If a generated name already exists, Moment adds a numeric suffix instead of overwriting it."),
+                Labeled("Filename format", voiceFilenameFormatText, "Date tokens are formatted with your Windows regional language where applicable."),
+                Labeled("Filename prefix", voiceFilenamePrefixText, "Optional text placed before the generated WebM filename.")
+            }
+        };
+        content.Children.Add(voiceFilenameCard);
+
         var transcriptionCard = Card();
         whisperInstallButton.Content = "Install / repair Whisper";
         whisperInstallButton.MinWidth = 164;
         whisperInstallButton.Click += WhisperInstallClick;
         whisperStatusText.Opacity = 0.72;
         ToolTipService.SetToolTip(transcriptionCheck, "After recording, run local Whisper and route the recognized text to the selected destination.");
-        transcriptionFolderField = Labeled("Separate note folder", FolderEditor(transcriptionFolderText, ChooseTranscriptionFolderClick), "Transcript Markdown files are saved here. Default: Voice Transcriptions in the selected vault.");
+        transcriptionFolderField = Labeled("Transcriptions folder", FolderEditor(transcriptionFolderText, ChooseTranscriptionFolderClick), "Transcript Markdown files are saved here. Default: Voice Transcriptions in the selected vault. This is only needed for Separate transcription note or Both destinations.");
+        transcriptionFilenameFormatField = Labeled("Filename format", transcriptionFilenameFormatText, "Tokens: YYYY year, MM month number, DD day, HH hour, mm minute, ss second, and SSS milliseconds. Moment adds .md automatically. Default: YYYY-MM-DD HH-mm-ss-SSS.");
+        transcriptionFilenamePrefixField = Labeled("Filename prefix", transcriptionFilenamePrefixText, "Text placed before each separate transcript filename. Example: Transcript- creates Transcript-2026-08-14 19-30-00-000.md.");
         var transcriptionDestinationField = Labeled("Destination", transcriptionDestinationCombo, "Choose Text Note, a separate note, or both.");
         transcriptionCard.Child = new StackPanel
         {
@@ -320,7 +343,8 @@ public sealed partial class MainPage : Page
                 Labeled("Model", whisperModelCombo, "Local Whisper model. Larger models can be more accurate and slower."),
                 transcriptionDestinationField,
                 transcriptionFolderField,
-                Labeled("Voice prefix", voicePrefixText, "Optional text placed before each transcript. Example: Meeting."),
+                transcriptionFilenameFormatField,
+                transcriptionFilenamePrefixField,
                 new StackPanel
                 {
                     Orientation = Orientation.Horizontal,
@@ -472,9 +496,12 @@ public sealed partial class MainPage : Page
         whisperLanguageCombo.SelectedItem = LanguageLabel(settings.WhisperLanguage);
         whisperModelCombo.SelectedItem = NativeWhisperEngine.Models.FirstOrDefault(model => string.Equals(model.Id, settings.WhisperModel, StringComparison.OrdinalIgnoreCase)) ?? NativeWhisperEngine.Models[1];
         transcriptionFolderText.Text = settings.TranscriptionFolder;
+        voiceFilenameFormatText.Text = string.IsNullOrWhiteSpace(settings.VoiceFilenameFormat) ? MomentFilename.DefaultFormat : settings.VoiceFilenameFormat;
+        voiceFilenamePrefixText.Text = settings.VoiceFilenamePrefix;
+        transcriptionFilenameFormatText.Text = string.IsNullOrWhiteSpace(settings.TranscriptionFilenameFormat) ? MomentFilename.DefaultFormat : settings.TranscriptionFilenameFormat;
+        transcriptionFilenamePrefixText.Text = settings.TranscriptionFilenamePrefix;
         includeAudioEmbedCheck.IsChecked = settings.IncludeAudioEmbed;
         transcriptionDestinationCombo.SelectedIndex = settings.TranscriptionDestination switch { "daily-note" => 1, "both" => 2, _ => 0 };
-        voicePrefixText.Text = settings.VoicePrefix;
         startWithWindowsCheck.IsChecked = settings.StartWithWindows;
         closeToTrayCheck.IsChecked = settings.CloseToTray;
         voiceStatusText.Text = controller.VoiceRegistered ? "Registered" : "Not registered";
@@ -506,8 +533,11 @@ public sealed partial class MainPage : Page
 
     private void UpdateTranscriptionFolderVisibility()
     {
-        if (transcriptionFolderField is not null)
-            transcriptionFolderField.Visibility = transcriptionDestinationCombo.SelectedIndex == 1 ? Visibility.Collapsed : Visibility.Visible;
+        var needsSeparateNote = transcriptionDestinationCombo.SelectedIndex is 0 or 2;
+        var visibility = needsSeparateNote ? Visibility.Visible : Visibility.Collapsed;
+        if (transcriptionFolderField is not null) transcriptionFolderField.Visibility = visibility;
+        if (transcriptionFilenameFormatField is not null) transcriptionFilenameFormatField.Visibility = visibility;
+        if (transcriptionFilenamePrefixField is not null) transcriptionFilenamePrefixField.Visibility = visibility;
     }
 
     private async void ChooseVaultClick(object sender, RoutedEventArgs args)
@@ -617,15 +647,18 @@ public sealed partial class MainPage : Page
         settings.DailyEnterToSave = dailyEnterToSaveCheck.IsChecked == true;
         settings.DailyCloseAfterSave = dailyCloseAfterSaveCheck.IsChecked == true;
         settings.AudioFolder = string.IsNullOrWhiteSpace(audioFolderText.Text) ? "Voice Notes" : audioFolderText.Text.Trim();
+        settings.VoiceFilenameFormat = string.IsNullOrWhiteSpace(voiceFilenameFormatText.Text) ? MomentFilename.DefaultFormat : voiceFilenameFormatText.Text.Trim();
+        settings.VoiceFilenamePrefix = voiceFilenamePrefixText.Text.Trim();
         settings.AudioInputDevice = audioInputDeviceCombo.SelectedValue as string ?? AudioInputDevices.DefaultKey;
         settings.AudioBitsPerSecond = audioBitrateCombo.SelectedIndex switch { 0 => 32_000, 2 => 96_000, _ => 64_000 };
         settings.EnableTranscription = transcriptionCheck.IsChecked == true;
         settings.WhisperLanguage = LanguageCode(whisperLanguageCombo.SelectedItem as string);
         settings.WhisperModel = (whisperModelCombo.SelectedItem as WhisperModelInfo)?.Id ?? "base";
         settings.TranscriptionFolder = string.IsNullOrWhiteSpace(transcriptionFolderText.Text) ? "Voice Transcriptions" : transcriptionFolderText.Text.Trim();
+        settings.TranscriptionFilenameFormat = string.IsNullOrWhiteSpace(transcriptionFilenameFormatText.Text) ? MomentFilename.DefaultFormat : transcriptionFilenameFormatText.Text.Trim();
+        settings.TranscriptionFilenamePrefix = transcriptionFilenamePrefixText.Text.Trim();
         settings.IncludeAudioEmbed = includeAudioEmbedCheck.IsChecked == true;
         settings.TranscriptionDestination = transcriptionDestinationCombo.SelectedIndex switch { 1 => "daily-note", 2 => "both", _ => "separate-note" };
-        settings.VoicePrefix = voicePrefixText.Text.Trim();
         settings.NativeProcessingEnabled = true;
         settings.StartWithWindows = startWithWindowsCheck.IsChecked == true;
         settings.CloseToTray = closeToTrayCheck.IsChecked == true;

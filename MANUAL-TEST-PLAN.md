@@ -41,7 +41,7 @@ Automated checks cover Daily Note transforms, provider settings, templates, inse
 
 ## Native voice capture and routing
 
-1. On the Voice page, choose an input device, audio folder, bitrate, destination, audio-embed option, and voice prefix. Verify the controls persist after saving. If Windows default is a virtual cable, choose the physical microphone explicitly.
+1. On the Voice page, choose an input device, audio folder, voice-note filename format/prefix, bitrate, destination, audio-embed option, and (when the destination includes a separate note) transcription folder and filename format/prefix. Verify the controls persist after saving. If Windows default is a virtual cable, choose the physical microphone explicitly.
 2. Press the voice shortcut. Verify only the compact native top-center island appears, recording starts automatically, and it shows the red recording ring, moving level bars, and native Stop/Cancel controls without status text.
 3. Leave the selected microphone silent for about two seconds. Verify the recording island keeps its original compact size and replaces the wave bars with a small red **No audio** warning while recording is still active. Speak into the selected microphone and verify the warning clears without interrupting recording.
 4. Speak for several seconds, then press the same shortcut again. Verify the island disappears immediately without a disabled-button flash and a WebM/Opus file exists under the selected audio folder.
@@ -59,8 +59,9 @@ Automated checks cover Daily Note transforms, provider settings, templates, inse
 1. Select **End of daily file** and verify Target heading and Missing heading are hidden. Select **Under a heading** and verify both fields appear together.
 2. Use **Create the heading**, **Append at the end**, and **Show an error** with a missing target heading and verify each behavior.
 3. Uncheck **Add capture timestamp** and verify both text and voice entries omit the timestamp heading while still using their normal destinations.
-4. Use the Audio folder and Separate note folder **Browse...** buttons. Verify the selected paths are stored relative to the selected vault and default to `Voice Notes` and `Voice Transcriptions`.
-5. Choose destination **Text Note**, **Separate transcription note**, and **Both**. Verify Separate note folder is hidden only for Text Note.
+4. Use the Audio folder and Transcriptions folder **Browse...** buttons. Verify the selected paths are stored relative to the selected vault and default to `Voice Notes` and `Voice Transcriptions`.
+5. Choose destination **Text Note**, **Separate transcription note**, and **Both**. Verify Transcriptions folder, its Filename format, and its Filename prefix are hidden for Text Note and visible for the other two destinations.
+6. Set a voice filename format such as `YYYY-MM-DD-[voice]-HH-mm` and prefix `Meeting-`; set a separate transcript format such as `DD MMMM YYYY` and prefix `Transcript-`. Capture with a separate-note destination and verify both `.webm` and `.md` names use the configured values and receive numeric suffixes on collisions.
 6. Hover the Fluent `Info` help markers and verify each tooltip uses the native system-colored rounded tooltip and explains the associated setting.
 7. In **Text Note → Text Note filename**, verify the default format is `YYYY-MM-DD`. Try `DD MMMM YYYY` and a prefix such as `Journal-`; verify month names follow the Windows regional language. Capture twice with the same generated name and verify both entries reuse the same Markdown file rather than overwriting or creating an accidental duplicate.
 

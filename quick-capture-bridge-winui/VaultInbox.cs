@@ -23,7 +23,7 @@ public sealed class VaultInbox
         var folder = SafeRelativeFolder(settings.AudioFolder, "Voice Notes");
         var directory = Path.Combine(settings.VaultPath, folder);
         Directory.CreateDirectory(directory);
-        var stem = startedAt.ToLocalTime().ToString("yyyy-MM-dd HH-mm-ss-fff");
+        var stem = MomentFilename.Format(startedAt, settings.VoiceFilenameFormat, settings.VoiceFilenamePrefix);
         var path = Path.Combine(directory, stem + ".webm");
         for (var suffix = 1; File.Exists(path); suffix++) path = Path.Combine(directory, $"{stem}-{suffix}.webm");
         return path;

@@ -152,8 +152,20 @@ internal static class VaultPath
     {
         var invalid = new HashSet<char>(Path.GetInvalidFileNameChars()) { '/', '\\' };
         var clean = new string((value ?? "").Select(character => invalid.Contains(character) ? '-' : character).ToArray()).Trim().TrimEnd('.', ' ');
-        if (clean.Length == 0 || clean is "." or "..") throw new InvalidOperationException("The Text Note filename is empty or invalid.");
+        if (clean.Length == 0 || clean is "." or "..") throw new InvalidOperationException("The filename is empty or invalid.");
         return clean;
+    }
+}
+
+internal static class MomentFilename
+{
+    public const string DefaultFormat = "YYYY-MM-DD HH-mm-ss-SSS";
+
+    public static string Format(DateTimeOffset timestamp, string? format, string? prefix)
+    {
+        var pattern = string.IsNullOrWhiteSpace(format) ? DefaultFormat : format.Trim();
+        var stem = MomentFormat.Format(timestamp.ToLocalTime(), pattern);
+        return VaultPath.SanitizeFilename($"{prefix?.Trim() ?? ""}{stem}");
     }
 }
 

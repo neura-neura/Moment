@@ -42,9 +42,16 @@ try
     var legacyText = new TextJob { Text = "Legacy text", Timestamp = "2026-08-13T10:31:00+00:00" };
     await File.WriteAllTextAsync(Path.Combine(root, ".quick-capture", "inbox", $"text-{legacyText.Id}.json"), JsonSerializer.Serialize(legacyText));
 
-    var audioPath = new VaultInbox(settings).EnsureAudioPath(DateTimeOffset.UtcNow);
+    settings.VoiceFilenameFormat = "DD MMMM YYYY HH-mm";
+    settings.VoiceFilenamePrefix = "Voice-";
+    settings.TranscriptionFilenameFormat = "DD MMMM YYYY";
+    settings.TranscriptionFilenamePrefix = "Transcript-";
+    var voiceTimestamp = new DateTimeOffset(2026, 8, 15, 11, 32, 0, TimeSpan.Zero);
+    var audioPath = new VaultInbox(settings).EnsureAudioPath(voiceTimestamp);
+    var expectedAudioStem = VaultPath.SanitizeFilename($"Voice-{MomentFormat.Format(voiceTimestamp.ToLocalTime(), "DD MMMM YYYY HH-mm")}");
+    Assert(Path.GetFileNameWithoutExtension(audioPath) == expectedAudioStem, "custom voice filename and prefix");
     await File.WriteAllBytesAsync(audioPath, new byte[128]);
-    new VaultInbox(settings).WriteVoice(audioPath, DateTimeOffset.UtcNow);
+    new VaultInbox(settings).WriteVoice(audioPath, voiceTimestamp);
     using (var processor = new NativeVoiceProcessor(settings))
     {
         processor.Schedule();
@@ -53,6 +60,8 @@ try
     }
     Assert(Directory.Exists(Path.Combine(root, "Voice Transcriptions")), "native voice output folder");
     Assert(Directory.EnumerateFiles(Path.Combine(root, "Voice Transcriptions"), "*.md").Any(), "native voice Markdown output");
+    var expectedTranscriptStem = VaultPath.SanitizeFilename($"Transcript-{MomentFormat.Format(voiceTimestamp.ToLocalTime(), "DD MMMM YYYY")}");
+    Assert(File.Exists(Path.Combine(root, "Voice Transcriptions", $"{expectedTranscriptStem}.md")), "custom transcription filename and prefix");
     Assert(Directory.EnumerateFiles(Path.Combine(root, ".quick-capture", "bridge-processed"), "text-*.json").Any(), "legacy text migration");
     await DownloadMoveSmokeAsync(root);
     Console.WriteLine("Native migration smoke test passed.");

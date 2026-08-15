@@ -216,8 +216,6 @@ public sealed class NativeVoiceProcessor : IDisposable
     private static string BuildVoiceNoteBody(string transcript, string audioRelativePath, BridgeSettings current)
     {
         var cleanTranscript = transcript.Trim();
-        var prefix = current.VoicePrefix?.Trim() ?? "";
-        if (prefix.Length > 0 && cleanTranscript.Length > 0) cleanTranscript = $"{prefix} {cleanTranscript}";
         var parts = new List<string>();
         if (cleanTranscript.Length > 0) parts.Add(cleanTranscript);
         if (current.IncludeAudioEmbed) parts.Add($"![[{audioRelativePath.Replace('\\', '/') }]]");
@@ -228,7 +226,7 @@ public sealed class NativeVoiceProcessor : IDisposable
     private static string WriteSeparateNote(string body, DateTimeOffset startedAt, BridgeSettings current)
     {
         var folder = VaultPath.Sanitize(string.IsNullOrWhiteSpace(current.TranscriptionFolder) ? "Voice Transcriptions" : current.TranscriptionFolder);
-        var stem = MomentFormat.Format(startedAt.ToLocalTime(), "YYYY-MM-DD HH-mm-ss-SSS");
+        var stem = MomentFilename.Format(startedAt, current.TranscriptionFilenameFormat, current.TranscriptionFilenamePrefix);
         var relative = VaultPath.Combine(folder, $"{stem}.md");
         var path = VaultPath.Resolve(current.VaultPath, relative);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);

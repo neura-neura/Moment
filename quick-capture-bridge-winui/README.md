@@ -4,7 +4,7 @@
 
 Moment is the native Windows application for frictionless Obsidian capture. It is built with WinUI 3 and Windows App SDK, so its settings window and both always-on-top picture-in-picture (PiP) capture panels use the same native UI stack. Moment runs independently; Quick Daily Capture and Quick Voice Notes are optional legacy integrations.
 
-It is made to work alongside Obsidian, while remaining useful with Obsidian closed or without the capture plugins. The public source and releases are published at [github.com/neura-neura/Moment](https://github.com/neura-neura/Moment). The current Windows release is [Moment 1.2.8](https://github.com/neura-neura/Moment/releases/tag/v1.2.8).
+It is made to work alongside Obsidian, while remaining useful with Obsidian closed or without the capture plugins. The public source and releases are published at [github.com/neura-neura/Moment](https://github.com/neura-neura/Moment). The current Windows release is [Moment 1.2.9](https://github.com/neura-neura/Moment/releases/tag/v1.2.9).
 
 The settings window uses a native WinUI NavigationView: Text Note, Voice, and Shortcuts are in the left menu, while startup and tray behavior live under the footer Settings section. The Save settings action remains available in the native footer across sections.
 
@@ -18,6 +18,7 @@ Moment remains useful while Obsidian is closed or another application, including
 - Voice shortcut: opens a compact 260x60 native recording island centered near the top edge with a classic red recording ring, live level bars, and compact Stop/Cancel actions. Press the same shortcut again to stop, save a compact 16 kHz mono WebM/Opus file, queue the job, and close the panel immediately; no Recording, save-status, or completion text is shown in the island.
 - Select any existing Obsidian vault. Text is inserted into the configured daily file immediately, and voice jobs are durably processed by Moment even when Obsidian is closed.
 - Voice settings include an explicit input-device selector. Windows default is preserved as the initial choice, while physical microphones can be selected when a virtual cable is the system default.
+- Voice settings include independent filename format and prefix controls for WebM voice notes and separate transcript Markdown notes. Transcript folder and filename controls appear only when the destination is a separate transcription note or Both.
 - Voice captures are finalized as 16 kHz mono WebM/Opus at the selected 32/64/96 kbps quality. The installer bundles the encoder, so no separate FFmpeg installation is required.
 - Optional local Whisper transcription is installed and repaired from the Voice page. Output is written as Markdown in the vault, with a WebM embed when enabled; Daily Note insertion and separate-note fallback are handled natively.
 - Text Note timestamps can be enabled or disabled for both text and voice destinations. Audio and transcript folders are selected relative to the vault with native folder pickers.
@@ -29,7 +30,7 @@ Moment remains useful while Obsidian is closed or another application, including
 
 ## Windows installer (EXE)
 
-Download the current Windows installer from the public [Moment v1.2.8 release](https://github.com/neura-neura/Moment/releases/tag/v1.2.8). Choose `MomentSetup-x64.exe` from the release assets.
+Download the current Windows installer from the public [Moment v1.2.9 release](https://github.com/neura-neura/Moment/releases/tag/v1.2.9). Choose `MomentSetup-x64.exe` from the release assets.
 
 For local development, build the native Windows installer:
 

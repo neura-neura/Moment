@@ -13,7 +13,7 @@ npm run verify
 
 The final run passed **41 plugin tests**: 18 for Quick Daily Capture and 23 for Quick Voice Notes/integration. It also passed strict TypeScript checks, ESLint, production plugin builds, and the Release x64 WinUI bridge build with zero warnings or errors.
 
-The native bridge build validates the configurable global registration path, native NavigationView settings surface, compact WinUI overlays, live no-signal feedback integrated into the recording controls, configurable localized Text Note filenames and collision reuse, NAudio recorder wiring, silent-capture rejection before vault enqueue, WebM encoder integration, atomic vault writer, native voice processor compilation, field tooltips, tray notifications, single-instance activation, the GitHub update checker, and release-version metadata.
+The native bridge build validates the configurable global registration path, native NavigationView settings surface, compact WinUI overlays, live no-signal feedback integrated into the recording controls, configurable localized Text Note filenames and collision reuse, configurable voice and transcript filename formats/prefixes, NAudio recorder wiring, silent-capture rejection before vault enqueue, WebM encoder integration, atomic vault writer, native voice processor compilation, field tooltips, tray notifications, single-instance activation, the GitHub update checker, and release-version metadata.
 
 ## Native migration smoke test
 
@@ -31,8 +31,8 @@ The local x64 installer was regenerated at:
 
 `quick-capture-bridge-winui/dist/MomentSetup-x64.exe`
 
-SHA-256: `C39E204A0F93E820822FCBF29FB70C8D0F20E2A152C532D8F7BA73CACC831780`
-Size: 144,313,856 bytes
+SHA-256: `CCD78E85C3FED5CEA2FDFA3B58ED1D9329CE391707D3BE1DD355D32CB056C2FB`
+Size: 144,292,397 bytes
 
 It is a real NSIS setup executable with Start menu and Desktop shortcuts (Desktop selected by default), a per-user install directory, Add/Remove Programs registration, and uninstaller. Its Finish-page launch passes `--foreground` so Moment opens visibly instead of staying in the tray. It is not an MSIX package and does not require a development certificate. A silent disposable install created the app executable and uninstaller; the uninstaller then removed the target successfully. `dist` contains only the installer.
 

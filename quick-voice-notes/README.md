@@ -151,4 +151,4 @@ npm run package -w quick-voice-notes
 
 ## Capturing while Obsidian is closed
 
-For global capture from a game or another full-screen app, use [Moment (WinUI 3)](../quick-capture-bridge-winui/README.md). Moment records WebM, runs local Whisper, and routes Markdown/audio output directly to the vault without requiring this plugin. This plugin remains available for the in-Obsidian command path. Download the current Windows installer from the public [Moment v1.2.8 release](https://github.com/neura-neura/Moment/releases/tag/v1.2.8).
+For global capture from a game or another full-screen app, use [Moment (WinUI 3)](../quick-capture-bridge-winui/README.md). Moment records WebM, runs local Whisper, and routes Markdown/audio output directly to the vault without requiring this plugin. This plugin remains available for the in-Obsidian command path. Download the current Windows installer from the public [Moment v1.2.9 release](https://github.com/neura-neura/Moment/releases/tag/v1.2.9).

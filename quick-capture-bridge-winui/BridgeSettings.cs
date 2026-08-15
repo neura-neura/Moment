@@ -24,14 +24,17 @@ public sealed class BridgeSettings
     // Migrated Quick Voice Notes settings.
     public string AudioInputDevice { get; set; } = "default";
     public string AudioFolder { get; set; } = "Voice Notes";
+    public string VoiceFilenameFormat { get; set; } = "YYYY-MM-DD HH-mm-ss-SSS";
+    public string VoiceFilenamePrefix { get; set; } = "";
     public int AudioBitsPerSecond { get; set; } = 64_000;
     public bool EnableTranscription { get; set; }
     public string WhisperLanguage { get; set; } = "auto";
     public string WhisperModel { get; set; } = "base";
     public string TranscriptionFolder { get; set; } = "Voice Transcriptions";
+    public string TranscriptionFilenameFormat { get; set; } = "YYYY-MM-DD HH-mm-ss-SSS";
+    public string TranscriptionFilenamePrefix { get; set; } = "";
     public bool IncludeAudioEmbed { get; set; } = true;
     public string TranscriptionDestination { get; set; } = "separate-note";
-    public string VoicePrefix { get; set; } = "";
     public bool NativeProcessingEnabled { get; set; } = true;
     public bool PluginSettingsImported { get; set; }
 }

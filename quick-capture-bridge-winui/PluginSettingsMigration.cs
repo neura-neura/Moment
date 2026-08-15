@@ -51,7 +51,6 @@ public static class PluginSettingsMigration
             ImportString(voice, "transcriptionFolder", value => settings.TranscriptionFolder = value, "transcription folder", importedFields);
             ImportBool(voice, "includeAudioEmbed", value => settings.IncludeAudioEmbed = value, "audio embeds", importedFields);
             ImportString(voice, "destination", value => settings.TranscriptionDestination = Valid(value, "separate-note", "daily-note", "both"), "transcription destination", importedFields);
-            ImportString(voice, "voicePrefix", value => settings.VoicePrefix = value, "voice prefix", importedFields);
 
             // The old integration toggle only controlled whether the second
             // plugin was available. The native bridge owns Daily Note routing,
