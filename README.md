@@ -1,8 +1,12 @@
-# Moment
+<p align="center">
+  <img src="Moment.App/Assets/MomentIcon.png" alt="Moment icon" width="180">
+</p>
 
-![Moment](Moment.App/Assets/MomentIcon.png)
+<h1 align="center">Moment</h1>
 
-Moment is a native Windows capture app for quick text and voice notes. It runs independently, writes Markdown and WebM directly into a selected workspace folder, and can be used alongside any compatible Markdown editor without requiring that editor to be open.
+<p align="center">A native Windows capture app for quick text and voice notes.</p>
+
+Moment runs independently, writes Markdown and WebM directly into configured folders, and can be used alongside any compatible Markdown editor without requiring that editor to be open.
 
 ## What it does
 

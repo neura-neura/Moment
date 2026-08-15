@@ -1,4 +1,8 @@
-# Moment
+<p align="center">
+  <img src="Assets/MomentIcon.png" alt="Moment icon" width="180">
+</p>
+
+<h1 align="center">Moment</h1>
 
 Moment is a native Windows capture app built with WinUI 3 and the Windows App SDK. It creates compact text and voice notes without requiring an editor to be open. It can also be used alongside any compatible Markdown editor: the generated Markdown and WebM files are written directly to the selected workspace folder.
 
