@@ -42,7 +42,8 @@ Automated checks cover recurring-note transforms, insertion modes, headings, loc
 5. Move the pointer near the text surface's upper-right corner. Verify a small native pin button appears only while the pointer is in that corner.
 6. Click the pin button, move the pointer away, and verify the button hides while the note remains visible after another window receives focus. Click the note again and verify it can be edited normally.
 7. Press Enter to save and Shift+Enter to insert a line break. Verify Escape or changing focus closes an unpinned surface without saving.
-8. Open a new Text Note and verify it starts unpinned. Confirm the generated Markdown entry contains the capture text and, when enabled, the timestamp.
+8. Open Settings and enable **Remember the pin state for new Text Notes**. Pin a note, save it, and open another Text Note; verify it starts pinned. Unpin it, save it, and verify the next note starts unpinned. Disable the preference and verify every new note starts unpinned.
+9. Confirm the generated Markdown entry contains the capture text and, when enabled, the timestamp.
 
 ## 5. Voice PiP and audio storage
 

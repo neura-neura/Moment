@@ -20,6 +20,8 @@ public sealed class MomentSettings
     public bool IncludeTimestamp { get; set; } = true;
     public bool RecurringNoteCloseAfterSave { get; set; } = true;
     public bool RecurringNoteEnterToSave { get; set; } = true;
+    public bool RememberTextNotePinState { get; set; }
+    public bool LastTextNotePinned { get; set; }
 
     public string AudioInputDevice { get; set; } = "default";
     public string AudioFolder { get; set; } = "Voice Notes";

@@ -12,7 +12,7 @@ This report covers the standalone Moment native application. The manual Windows 
 - WebM voice storage and configurable transcript destinations.
 - Durable pending, completed, and failed voice queues.
 - Silent-capture rejection before queueing.
-- Text PiP pin behavior remains manual-only because it requires native pointer, focus, and window-activation events.
+- Text PiP pin behavior and the optional remembered pin preference remain manual-only because they require native pointer, focus, and window-activation events.
 - Verified Whisper download finalization.
 
 ## Manual-only coverage

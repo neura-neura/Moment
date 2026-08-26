@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Moment;
 
 var root = Path.Combine(Path.GetTempPath(), $"moment-smoke-{Guid.NewGuid():N}");
@@ -18,6 +19,13 @@ try
         RecurringNoteTargetHeading = "Inbox",
         RecurringNoteMissingHeadingBehavior = "create"
     };
+
+    var pinStateRoundTrip = JsonSerializer.Deserialize<MomentSettings>(JsonSerializer.Serialize(new MomentSettings
+    {
+        RememberTextNotePinState = true,
+        LastTextNotePinned = true
+    })) ?? throw new InvalidOperationException("Pin state settings could not be deserialized.");
+    Assert(pinStateRoundTrip.RememberTextNotePinState && pinStateRoundTrip.LastTextNotePinned, "persistent Text Note pin settings");
 
     var recurringNotePath = new RecurringNoteService(settings).WriteCapture("Smoke text", new DateTimeOffset(2026, 8, 13, 10, 30, 0, TimeSpan.Zero));
     var recurringText = await File.ReadAllTextAsync(Path.Combine(root, recurringNotePath.Replace('/', Path.DirectorySeparatorChar)));

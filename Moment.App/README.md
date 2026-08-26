@@ -10,7 +10,7 @@ Moment is a native Windows capture app built with WinUI 3 and the Windows App SD
 
 - Global text and voice shortcuts, including F13-F24 and Stream Deck keys.
 - A compact PiP text surface with immediate keyboard focus.
-- A per-note pin button that keeps the Text Note PiP visible after focus changes; new notes always start unpinned.
+- A per-note pin button that keeps the Text Note PiP visible after focus changes. New notes start unpinned by default, or can remember the previous pin state when enabled in Settings.
 - A compact PiP voice surface with WebM/Opus recording and live no-audio feedback.
 - One new **recurring note** per calendar day, with configurable filename format, prefix, template insertion, headings, and timestamps.
 - Folder pickers for Text Notes, Voice Notes, and Transcriptions. Each output can be placed anywhere on the computer, independently of the selected workspace.

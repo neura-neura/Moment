@@ -29,6 +29,7 @@ public sealed class CaptureController : IDisposable
     private TextPiP? textPiP;
 
     public event Action<string, bool>? StatusChanged;
+    public event Action<bool>? TextPinStateChanged;
     public bool VoiceRegistered => voiceRegistered;
     public bool TextRegistered => textRegistered;
     public string LastStatus { get; private set; } = "";
@@ -129,6 +130,7 @@ public sealed class CaptureController : IDisposable
         var panel = new TextPiP(inbox, settings);
         panel.Saved += path => SetStatus($"Text capture saved to {path}.", true);
         panel.Failed += message => SetStatus(message, false);
+        panel.PinStateChanged += pinned => TextPinStateChanged?.Invoke(pinned);
         panel.Closed += (_, _) => textPiP = null;
         textPiP = panel;
         panel.Activate();
@@ -189,10 +191,12 @@ public sealed class TextPiP : Window
     private bool saving;
     private bool isActive;
     private bool pinned;
+    private bool pinInteraction;
     private Microsoft.UI.Dispatching.DispatcherQueueTimer? closeTimer;
 
     public event Action<string>? Saved;
     public event Action<string>? Failed;
+    public event Action<bool>? PinStateChanged;
 
     public void BringToFrontAndFocus()
     {
@@ -206,6 +210,7 @@ public sealed class TextPiP : Window
     {
         this.inbox = inbox;
         this.settings = settings;
+        pinned = settings.RememberTextNotePinState && settings.LastTextNotePinned;
         Title = "";
         input = new TextBox
         {
@@ -244,7 +249,8 @@ public sealed class TextPiP : Window
             Content = pinIcon,
             HorizontalAlignment = HorizontalAlignment.Right,
             VerticalAlignment = VerticalAlignment.Top,
-            Visibility = Visibility.Collapsed
+            Visibility = Visibility.Collapsed,
+            AllowFocusOnInteraction = false
         };
         AutomationProperties.SetName(pinButton, "Pin note");
         pinButton.Click += PinButtonClick;
@@ -262,6 +268,7 @@ public sealed class TextPiP : Window
         pinHotspot.PointerEntered += PinHotspotPointerEntered;
         pinHotspot.PointerExited += PinHotspotPointerExited;
         pinHotspot.Children.Add(pinButton);
+        ApplyPinVisuals();
 
         var content = new Grid();
         content.Children.Add(input);
@@ -289,7 +296,7 @@ public sealed class TextPiP : Window
             if (args.WindowActivationState == WindowActivationState.Deactivated)
             {
                 isActive = false;
-                if (!pinned) Cancel();
+                if (!pinned && !pinInteraction) Cancel();
                 return;
             }
             isActive = true;
@@ -313,18 +320,57 @@ public sealed class TextPiP : Window
 
     private void PinButtonClick(object sender, RoutedEventArgs args)
     {
+        if (saving) return;
+        pinInteraction = true;
         pinned = !pinned;
-        pinButton.Content = pinIcon;
-        pinButton.Background = pinned
-            ? AccentBrush()
-            : null;
-        pinButton.Foreground = pinned
-            ? AccentForegroundBrush()
-            : null;
-        pinIcon.Foreground = pinButton.Foreground;
-        AutomationProperties.SetName(pinButton, pinned ? "Unpin note" : "Pin note");
-        input.Focus(FocusState.Programmatic);
+        ApplyPinVisuals();
+        PinStateChanged?.Invoke(pinned);
+
+        // Do not move focus synchronously from the Button.Click event. On a
+        // native overlay that can produce a transient activation/deactivation
+        // pair, which used to make the unpin click look like it was ignored.
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (!saving)
+            {
+                input.Focus(FocusState.Programmatic);
+                input.SelectionStart = input.Text.Length;
+                input.SelectionLength = 0;
+            }
+            DispatcherQueue.TryEnqueue(() => pinInteraction = false);
+        });
     }
+
+    private void ApplyPinVisuals()
+    {
+        var background = pinned ? AccentBrush() : TransparentBrush();
+        var foreground = pinned ? AccentForegroundBrush() : NativeControlForegroundBrush();
+        var pointerOverBackground = pinned ? background : NativePinHoverBrush();
+
+        pinButton.Background = background;
+        pinButton.Foreground = foreground;
+        pinIcon.Foreground = foreground;
+        AutomationProperties.SetName(pinButton, pinned ? "Unpin note" : "Pin note");
+
+        // WinUI's default Button template uses theme resources for its visual
+        // states. Set those resources on this one icon button so PointerOver
+        // and Pressed cannot replace a selected accent surface with a white
+        // background and a low-contrast glyph.
+        SetPinResource("ButtonBackground", background);
+        SetPinResource("ButtonBackgroundPointerOver", pointerOverBackground);
+        SetPinResource("ButtonBackgroundPressed", pointerOverBackground);
+        SetPinResource("ButtonBackgroundFocused", pointerOverBackground);
+        SetPinResource("ButtonForeground", foreground);
+        SetPinResource("ButtonForegroundPointerOver", foreground);
+        SetPinResource("ButtonForegroundPressed", foreground);
+        SetPinResource("ButtonForegroundFocused", foreground);
+        SetPinResource("ButtonBorderBrush", TransparentBrush());
+        SetPinResource("ButtonBorderBrushPointerOver", TransparentBrush());
+        SetPinResource("ButtonBorderBrushPressed", TransparentBrush());
+        SetPinResource("ButtonBorderBrushFocused", TransparentBrush());
+    }
+
+    private void SetPinResource(string key, Brush value) => pinButton.Resources[key] = value;
 
     private void QueueFocus()
     {
@@ -388,10 +434,8 @@ public sealed class TextPiP : Window
             else
             {
                 saving = false;
-                pinned = false;
-                pinButton.Background = null;
-                pinButton.Foreground = null;
-                pinIcon.Foreground = null;
+                pinned = settings.RememberTextNotePinState && settings.LastTextNotePinned;
+                ApplyPinVisuals();
                 input.ClearValue(TextBox.TextProperty);
                 QueueFocus();
             }
@@ -499,6 +543,24 @@ public sealed class TextPiP : Window
         foreach (var key in new[] { "TextOnAccentFillColorPrimaryBrush", "SystemControlForegroundBaseMediumLowBrush" })
             if (resources.ContainsKey(key) && resources[key] is Brush brush) return brush;
         return new SolidColorBrush(Colors.White);
+    }
+
+    private static Brush TransparentBrush() => new SolidColorBrush(Colors.Transparent);
+
+    private static Brush NativeControlForegroundBrush()
+    {
+        var resources = Application.Current.Resources;
+        foreach (var key in new[] { "TextFillColorPrimaryBrush", "ControlForegroundBrush", "SystemControlForegroundBaseHighBrush" })
+            if (resources.ContainsKey(key) && resources[key] is Brush brush) return brush;
+        return new SolidColorBrush(Colors.Black);
+    }
+
+    private static Brush NativePinHoverBrush()
+    {
+        var resources = Application.Current.Resources;
+        foreach (var key in new[] { "ControlFillColorSecondaryBrush", "ControlAltFillColorSecondaryBrush", "SubtleFillColorSecondaryBrush", "ControlFillColorDefaultBrush" })
+            if (resources.ContainsKey(key) && resources[key] is Brush brush) return brush;
+        return new SolidColorBrush(Colors.LightGray);
     }
 
 }

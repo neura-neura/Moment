@@ -52,6 +52,7 @@ public sealed partial class MainPage : Page
     private readonly NativeWhisperEngine whisperEngine = new();
     private readonly CheckBox startWithWindowsCheck = new() { Content = "Start with Windows" };
     private readonly CheckBox closeToTrayCheck = new() { Content = "Keep running in the tray when the window is closed", IsChecked = true };
+    private readonly CheckBox rememberTextNotePinStateCheck = new() { Content = "Remember the pin state for new Text Notes" };
     private readonly UpdateService updateService = new();
     private readonly Button updateButton = new();
     private readonly TextBlock updateStatusText = new();
@@ -69,6 +70,7 @@ public sealed partial class MainPage : Page
         BuildUi();
         controller = new CaptureController(settings);
         controller.StatusChanged += OnStatusChanged;
+        controller.TextPinStateChanged += OnTextPinStateChanged;
         UpdateFields();
         _ = RefreshWhisperStatusAsync();
     }
@@ -388,6 +390,20 @@ public sealed partial class MainPage : Page
         };
         content.Children.Add(privacyCard);
 
+        var textNoteCard = Card();
+        ToolTipService.SetToolTip(rememberTextNotePinStateCheck, "When enabled, each new Text Note starts with the same pin state as the previous note. When disabled, every new note starts unpinned.");
+        textNoteCard.Child = new StackPanel
+        {
+            Spacing = 8,
+            Children =
+            {
+                Heading("Text Note behavior", 18),
+                rememberTextNotePinStateCheck,
+                Body("Remembering the pin state is optional and applies only to the next Text Note surfaces you open.")
+            }
+        };
+        content.Children.Add(textNoteCard);
+
         var updateCard = Card();
         updateButton.Content = "Check for updates";
         updateButton.MinWidth = 148;
@@ -507,6 +523,7 @@ public sealed partial class MainPage : Page
         transcriptionDestinationCombo.SelectedIndex = settings.TranscriptionDestination switch { "recurring-note" => 1, "both" => 2, _ => 0 };
         startWithWindowsCheck.IsChecked = settings.StartWithWindows;
         closeToTrayCheck.IsChecked = settings.CloseToTray;
+        rememberTextNotePinStateCheck.IsChecked = settings.RememberTextNotePinState;
         voiceStatusText.Text = controller.VoiceRegistered ? "Registered" : "Not registered";
         textStatusText.Text = controller.TextRegistered ? "Registered" : "Not registered";
         statusBar.Text = controller.LastStatus;
@@ -686,6 +703,7 @@ public sealed partial class MainPage : Page
         settings.TranscriptionDestination = transcriptionDestinationCombo.SelectedIndex switch { 1 => "recurring-note", 2 => "both", _ => "separate-note" };
         settings.StartWithWindows = startWithWindowsCheck.IsChecked == true;
         settings.CloseToTray = closeToTrayCheck.IsChecked == true;
+        settings.RememberTextNotePinState = rememberTextNotePinStateCheck.IsChecked == true;
         settingsStore.Save(settings);
         StartupManager.SetEnabled(settings.StartWithWindows);
         controller.Register(settings);
@@ -782,7 +800,24 @@ public sealed partial class MainPage : Page
         }
     }
 
-    public void Dispose() => controller.Dispose();
+    public void Dispose()
+    {
+        controller.TextPinStateChanged -= OnTextPinStateChanged;
+        controller.Dispose();
+    }
+
+    private void OnTextPinStateChanged(bool pinned)
+    {
+        try
+        {
+            settings.LastTextNotePinned = pinned;
+            settingsStore.Save(settings);
+        }
+        catch (Exception error)
+        {
+            statusBar.Text = $"Pin state could not be saved: {error.Message}";
+        }
+    }
 
     private void OnStatusChanged(string message, bool succeeded)
     {
