@@ -182,9 +182,13 @@ public sealed class TextPiP : Window
     private readonly MomentSettings settings;
     private readonly TextBox input;
     private readonly Border surface;
+    private readonly Grid pinHotspot;
+    private readonly Button pinButton;
+    private readonly FontIcon pinIcon;
     private readonly ScaleTransform scale = new() { ScaleX = 0.94, ScaleY = 0.94 };
     private bool saving;
     private bool isActive;
+    private bool pinned;
     private Microsoft.UI.Dispatching.DispatcherQueueTimer? closeTimer;
 
     public event Action<string>? Saved;
@@ -223,6 +227,46 @@ public sealed class TextPiP : Window
         ScrollViewer.SetVerticalScrollBarVisibility(input, ScrollBarVisibility.Auto);
         ScrollViewer.SetHorizontalScrollBarVisibility(input, ScrollBarVisibility.Disabled);
 
+        pinIcon = new FontIcon
+        {
+            Glyph = "\uE718",
+            FontSize = 15,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        pinButton = new Button
+        {
+            Width = 32,
+            Height = 32,
+            MinWidth = 0,
+            MinHeight = 0,
+            Padding = new Thickness(0),
+            Content = pinIcon,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Top,
+            Visibility = Visibility.Collapsed
+        };
+        AutomationProperties.SetName(pinButton, "Pin note");
+        pinButton.Click += PinButtonClick;
+        ToolTipService.SetToolTip(pinButton, "Keep this note visible when another window gets focus.");
+
+        pinHotspot = new Grid
+        {
+            Width = 48,
+            Height = 48,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Top,
+            Background = new SolidColorBrush(Colors.Transparent),
+            IsHitTestVisible = true
+        };
+        pinHotspot.PointerEntered += PinHotspotPointerEntered;
+        pinHotspot.PointerExited += PinHotspotPointerExited;
+        pinHotspot.Children.Add(pinButton);
+
+        var content = new Grid();
+        content.Children.Add(input);
+        content.Children.Add(pinHotspot);
+
         surface = new Border
         {
             Width = 320,
@@ -236,7 +280,7 @@ public sealed class TextPiP : Window
             Background = NativeSurfaceBrush(),
             RenderTransform = scale,
             RenderTransformOrigin = new Windows.Foundation.Point(0.5, 0.5),
-            Child = input
+            Child = content
         };
         Content = surface;
         input.Loaded += (_, _) => QueueFocus();
@@ -245,7 +289,7 @@ public sealed class TextPiP : Window
             if (args.WindowActivationState == WindowActivationState.Deactivated)
             {
                 isActive = false;
-                Cancel();
+                if (!pinned) Cancel();
                 return;
             }
             isActive = true;
@@ -255,6 +299,31 @@ public sealed class TextPiP : Window
             AnimateIn();
             QueueFocus();
         };
+    }
+
+    private void PinHotspotPointerEntered(object sender, PointerRoutedEventArgs args)
+    {
+        pinButton.Visibility = Visibility.Visible;
+    }
+
+    private void PinHotspotPointerExited(object sender, PointerRoutedEventArgs args)
+    {
+        pinButton.Visibility = Visibility.Collapsed;
+    }
+
+    private void PinButtonClick(object sender, RoutedEventArgs args)
+    {
+        pinned = !pinned;
+        pinButton.Content = pinIcon;
+        pinButton.Background = pinned
+            ? AccentBrush()
+            : null;
+        pinButton.Foreground = pinned
+            ? AccentForegroundBrush()
+            : null;
+        pinIcon.Foreground = pinButton.Foreground;
+        AutomationProperties.SetName(pinButton, pinned ? "Unpin note" : "Pin note");
+        input.Focus(FocusState.Programmatic);
     }
 
     private void QueueFocus()
@@ -319,6 +388,10 @@ public sealed class TextPiP : Window
             else
             {
                 saving = false;
+                pinned = false;
+                pinButton.Background = null;
+                pinButton.Foreground = null;
+                pinIcon.Foreground = null;
                 input.ClearValue(TextBox.TextProperty);
                 QueueFocus();
             }
@@ -410,6 +483,22 @@ public sealed class TextPiP : Window
         foreach (var key in new[] { "ControlStrokeColorDefaultBrush", "DividerStrokeColorDefaultBrush" })
             if (resources.ContainsKey(key) && resources[key] is Brush brush) return brush;
         return new SolidColorBrush(Colors.Transparent);
+    }
+
+    private static Brush AccentBrush()
+    {
+        var resources = Application.Current.Resources;
+        foreach (var key in new[] { "AccentFillColorDefaultBrush", "SystemControlHighlightAccentBrush" })
+            if (resources.ContainsKey(key) && resources[key] is Brush brush) return brush;
+        return new SolidColorBrush(Colors.Black);
+    }
+
+    private static Brush AccentForegroundBrush()
+    {
+        var resources = Application.Current.Resources;
+        foreach (var key in new[] { "TextOnAccentFillColorPrimaryBrush", "SystemControlForegroundBaseMediumLowBrush" })
+            if (resources.ContainsKey(key) && resources[key] is Brush brush) return brush;
+        return new SolidColorBrush(Colors.White);
     }
 
 }

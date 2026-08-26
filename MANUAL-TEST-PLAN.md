@@ -39,8 +39,10 @@ Automated checks cover recurring-note transforms, insertion modes, headings, loc
 2. Verify the settings page reports registration failures instead of silently accepting an unavailable shortcut.
 3. Trigger the text shortcut while another application is focused.
 4. Verify the compact PiP text surface appears at the intended lower-right position, uses native window behavior, receives focus immediately, and accepts typing without a click.
-5. Press Enter to save and Shift+Enter to insert a line break. Verify Escape or changing focus closes the surface without saving.
-6. Confirm the generated Markdown entry contains the capture text and, when enabled, the timestamp.
+5. Move the pointer near the text surface's upper-right corner. Verify a small native pin button appears only while the pointer is in that corner.
+6. Click the pin button, move the pointer away, and verify the button hides while the note remains visible after another window receives focus. Click the note again and verify it can be edited normally.
+7. Press Enter to save and Shift+Enter to insert a line break. Verify Escape or changing focus closes an unpinned surface without saving.
+8. Open a new Text Note and verify it starts unpinned. Confirm the generated Markdown entry contains the capture text and, when enabled, the timestamp.
 
 ## 5. Voice PiP and audio storage
 

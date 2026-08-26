@@ -14,6 +14,7 @@ Moment runs independently, writes Markdown and WebM directly into configured fol
 - Creates one recurring note for each calendar day and appends timestamped entries safely.
 - Lets you choose the Text Notes, Voice Notes, and Transcriptions folders anywhere on your computer; the selected workspace remains the place used for workspace-level capture state.
 - Records compact WebM/Opus audio and optionally transcribes it locally with Whisper.
+- Lets you pin an individual Text Note PiP so it remains visible when another window receives focus; each new note starts unpinned.
 - Routes voice output to the recurring note, a separate transcript note, or both.
 - Runs from the Windows notification tray and can start with Windows.
 - Ships as a traditional per-user NSIS `.exe` installer.
